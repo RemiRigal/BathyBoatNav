@@ -1,0 +1,29 @@
+<launch>
+    
+    <group ns="Environment">
+        <param name="Name_target" type="string" value="target"/>
+        <param name="Square_map" type="int" value="100"/>
+        <param name="Target_mode" type="string" value="line"/>
+
+        <node name="cible" pkg="guerledan" type="target" output="screen"/>
+    </group>
+
+    <group ns="boat">
+        <param name="Pos_x" type="double" value="-50.0"/>
+        <param name="Pos_y" type="double" value="80.0"/>
+        <param name="Theta" type="double" value="-1.57"/>
+        
+        <param name="Cons_u" type="double" value="0.0"/>
+        
+        <param name="Name_boat" type="string" value="boat"/>
+        <param name="Vitesse_boat" type="double" value="1.0"/>
+        
+        <param name="Regul" type="string" value="line"/>
+        
+        <node name="simu_helios" pkg="guerledan" type="simu_helios" />
+        <node name="regul_helios" pkg="guerledan" type="regul_helios" output="screen" />
+
+        <node name="serveur" pkg="guerledan" type="serveur" output="screen" />
+    </group>
+
+</launch>
