@@ -13,8 +13,6 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_listener.h"
 
-#include "simu_init/depth.h"
-
 #include "std_srvs/Empty.h"
 
 using namespace std;

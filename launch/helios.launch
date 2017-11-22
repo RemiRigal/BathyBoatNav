@@ -5,7 +5,7 @@
         <param name="Square_map" type="int" value="100"/>
         <param name="Target_mode" type="string" value="line"/>
 
-        <node name="cible" pkg="guerledan" type="target" output="screen"/>
+        <node name="cible" pkg="BathyBoatNav" type="target" output="screen"/>
     </group>
 
     <group ns="boat">
@@ -20,10 +20,10 @@
         
         <param name="Regul" type="string" value="line"/>
         
-        <node name="simu_helios" pkg="guerledan" type="simu_helios" />
-        <node name="regul_helios" pkg="guerledan" type="regul_helios" output="screen" />
+        <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
+        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
 
-        <node name="serveur" pkg="guerledan" type="serveur" output="screen" />
+        <node name="serveur" pkg="BathyBoatNav" type="serveur" output="screen" />
     </group>
 
 </launch>

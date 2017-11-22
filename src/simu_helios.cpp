@@ -133,7 +133,7 @@ int main(int argc, char** argv)
         msgs_boat.color.r = 1.0;
         msgs_boat.color.g = 1.0;
         msgs_boat.color.b = 1.0;
-        msgs_boat.mesh_resource = "package://guerledan/mesh/boat.dae";
+        msgs_boat.mesh_resource = "package://BathyBoatNav/mesh/boat.dae";
         
         mark_pub.publish(msgs_boat);
         
