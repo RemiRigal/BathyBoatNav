@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
+  std_srvs
+  sensor_msgs
   tf
   tf2
   tf2_ros
@@ -162,6 +164,8 @@ add_executable(simu_helios 	  src/simu_helios.cpp)
 
 add_executable(target   src/target.cpp)
 
+add_executable(mission_interpreter src/mission_interpreter.cpp)
+
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
@@ -205,6 +209,10 @@ target_link_libraries(target
   ${catkin_LIBRARIES}
 )
 
+
+target_link_libraries(mission_interpreter
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
