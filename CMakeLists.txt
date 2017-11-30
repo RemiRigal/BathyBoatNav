@@ -73,6 +73,7 @@ add_service_files(
   depth.srv
   Point.srv
   dist.srv
+  next_goal.srv
 )
 
 ## Generate actions in the 'action' folder
