@@ -23,7 +23,7 @@
         <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
 
-        <node name="serveur" pkg="BathyBoatNav" type="serveur" output="screen" />
+        <node name="tcp_serveur" pkg="BathyBoatNav" type="tcp_serveur" output="screen" />
     </group>
 
 </launch>

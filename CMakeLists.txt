@@ -154,7 +154,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/BathyBoatNav_node.cpp)
 
-add_executable(serveur  src/serveur.cpp)
+add_executable(tcp_serveur  src/tcp_serveur.cpp)
+#add_executable(serveur  src/serveur.cpp)
 add_executable(serial   src/serial.cpp)
 add_executable(fix_rtk   src/tcp_rtk.cpp)
 #add_executable(video_tcp      src/video_tcp.cpp)
@@ -181,9 +182,12 @@ add_executable(mission_interpreter src/mission_interpreter.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(serveur
+target_link_libraries(tcp_serveur
   ${catkin_LIBRARIES}
 )
+#target_link_libraries(serveur
+#  ${catkin_LIBRARIES}
+#)
 target_link_libraries(serial
   ${catkin_LIBRARIES}
 )
