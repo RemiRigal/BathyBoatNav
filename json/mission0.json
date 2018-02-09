@@ -1,0 +1,34 @@
+{
+    "missions": [
+	    {
+            "type": "WayPoint",
+            "wayPoints": [
+		        {
+                    "latitude": 48.20815,
+                    "longitude": -3.026854
+                },
+		        {
+                       "latitude": 48.20904,
+                        "longitude": -3.006805
+                },
+		        {
+                    "latitude": 48.19806, 
+                    "longitude": -3.016903
+                },
+		        {
+                    "latitude": 48.20004,
+                    "longitude": -3.017005
+                }
+	        ]
+        },
+	    {
+            "type": "WayPoint",
+            "wayPoints": [
+		        {
+                    "latitude": 48.19815,
+                    "longitude": -3.016854
+                }
+	        ]
+        }
+    ]
+}

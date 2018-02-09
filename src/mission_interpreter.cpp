@@ -16,7 +16,7 @@ void MissionInterpreter::Prepare() {
 
 void MissionInterpreter::ReadFile() {
     std::string value;
-    jsonFile.open("/home/noelie/Documents/ProjetGuerledan/Noelie/mission.json", std::ios::app);
+    jsonFile.open("/home/lallemfa/workspaceROS/src/BathyBoatNav/json/mission0.json", std::ios::app);
     if (jsonFile.is_open()){
         while(jsonFile >> value){
             arrayFile.push_back(value);
@@ -91,6 +91,7 @@ void MissionInterpreter::FillArrayPoints() {
 
 
 bool MissionInterpreter::sendPointService(BathyBoatNav::next_goal::Request &req, BathyBoatNav::next_goal::Response &res) {
+    //ROS_INFO("%d\n", nbrMissions); 
     if (nbrMissions > 0 && !missionList.front().empty()){
 		goalPoint = missionList.front().front();
 		missionList.front().pop_front();

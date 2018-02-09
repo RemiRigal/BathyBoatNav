@@ -11,6 +11,7 @@
 #include "BathyBoatNav/next_goal.h"
 #include "std_srvs/Empty.h"
 #include "string.h"
+#include <stdlib.h>
 
 
 class MissionInterpreter{
