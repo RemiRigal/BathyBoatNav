@@ -19,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   serial
 )
-find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -154,10 +153,10 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/BathyBoatNav_node.cpp)
 
-add_executable(serveur  src/serveur.cpp)
+add_executable(tcp_serveur  src/tcp_serveur.cpp)
+#add_executable(serveur  src/serveur.cpp)
 add_executable(serial   src/serial.cpp)
-add_executable(fix_rtk   src/tcp_rtk.cpp)
-#add_executable(video_tcp      src/video_tcp.cpp)
+#add_executable(fix_rtk   src/tcp_rtk.cpp)
 
 add_executable(pololu         src/pololu.cpp)
 add_executable(regul_helios 	src/regul_helios.cpp)
@@ -165,7 +164,7 @@ add_executable(simu_helios 	  src/simu_helios.cpp)
 
 add_executable(target   src/target.cpp)
 
-add_executable(mission_interpreter src/mission_interpreter.cpp)
+#add_executable(mission_interpreter src/mission_interpreter.cpp)
 
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -181,20 +180,18 @@ add_executable(mission_interpreter src/mission_interpreter.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(serveur
+target_link_libraries(tcp_serveur
   ${catkin_LIBRARIES}
 )
+#target_link_libraries(serveur
+#  ${catkin_LIBRARIES}
+#)
 target_link_libraries(serial
   ${catkin_LIBRARIES}
 )
-target_link_libraries(fix_rtk
-  ${catkin_LIBRARIES}
-)
-#target_link_libraries(video_tcp
+#target_link_libraries(fix_rtk
 #  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
 #)
-
 
 target_link_libraries(pololu
   ${catkin_LIBRARIES}
@@ -211,9 +208,9 @@ target_link_libraries(target
 )
 
 
-target_link_libraries(mission_interpreter
-  ${catkin_LIBRARIES}
-)
+#target_link_libraries(mission_interpreter
+#  ${catkin_LIBRARIES}
+#)
 #############
 ## Install ##
 #############
