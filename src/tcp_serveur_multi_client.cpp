@@ -22,9 +22,10 @@ struct sockaddr_in adr;
 socklen_t lgadresse;
 
 string msg;
+int pid;
+int ppid;
 
-bool isSending;
-
+fd_set fdset;
 // SIGACTION
 void signals_handler(int signal_number)
 {
@@ -36,82 +37,76 @@ void signals_handler(int signal_number)
 	exit(1);
 }
 
-void send_to ()
+void send_process (int sock)
 {
 	ros::Rate loop_rate(10);
+
 	char buffer[500];
 	while(ros::ok())
 	{
-		sprintf(buffer, "%s", msg.c_str());
-
-		//printf("%d\n", send(socket_service, buffer, strlen(buffer), 0));
-
-		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		if(ppid != getppid())
 		{
-			printf("End of connection\n");
-			break;
+			printf("Parent killed\n");
+			close(socket_service);
+			exit(1);
 		}
 
-		printf("Sent : %s\n", buffer);
+		sprintf(buffer, "%s", msg);
+
+		if( send(socket_service, buffer, strlen(buffer), 0) <= 0 )
+		{
+			break;
+		}
 
 		ros::spinOnce();
         loop_rate.sleep();
 	}
 }
 
-void rec_from ()
+void accept_connection()
 {
-	ros::Rate loop_rate(10);
-	char c[1];
-	string rcv_msg;
-	int res;
-	int i, j;
-
-	while(ros::ok())
+	while(1)
 	{
-		do{
-			res = recv(socket_service, c, 1, 0);
+		struct timeval tv = {2, 2};
+		FD_ZERO(&fdset);
+		FD_SET(socket_RV, &fdset);
+		select(socket_RV+1, &fdset, NULL, NULL, &tv);
 
-			if( res <= 0 )
+		//printf("%d\n", FD_ISSET(socket_RV, &fdset));
+		if (FD_ISSET(socket_RV, &fdset))
+		{
+			printf("Connection happening\n");
+			socket_service = accept(socket_RV,(struct sockaddr *)&adr, &lgadresse); // Accepte la connection
+			printf("Connection successful\n");
+
+			if (socket_service < 0)
 			{
-				printf("End of connection\n");
-				break;
+		        perror("Accept error");
+	        	exit(1);
 			}
-			
-			rcv_msg.append(c);
-		} while((int)c[0] != 0);
 
-		printf("Recv : %s\n", rcv_msg.c_str());
-		rcv_msg.clear();
+			if ((pid = fork()) < 0)
+			{
+				perror("ERROR on fork");
+				exit(1);
+			}
+
+			if (pid == 0)
+			{
+				close(socket_RV);
+				send_process(socket_service);
+				close(socket_service);
+				printf("Client disconnected\n");
+				exit(0);
+			} else {
+				printf("PID fils : %d\n", pid);
+				close(socket_service);
+			}
+		}
 	}
 }
 
-void accept_loop()
-{
-	while(ros::ok())
-	{
-
-		printf("Waiting for connection...\n");
-		socket_service = accept(socket_RV,(struct sockaddr *)&adr, &lgadresse);
-		printf("Connection successful\n");
-
-		if (socket_service < 0)
-		{
-	        perror("Accept error");
-        	exit(1);
-		}
-
-		if(isSending)
-		{
-			send_to();
-		} else {
-			rec_from();
-		}
-		
-	}
-}
-
-void serveur(int port)
+int serveur(int port)
 {
 	
 
@@ -140,18 +135,22 @@ void serveur(int port)
 		exit(1);
 	}
 	
-	accept_loop();
+	accept_connection();
+
+    return socket_RV;
 }
 
 void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 {
 	msg = ros_msg->data;
+	cout << "Msg -> " << msg << endl;
 }
 
 	// Main
 
 int main(int argc, char *argv [])
 {
+	ppid = getpid();
 
 	// SIGACTION
     struct sigaction action;
@@ -166,17 +165,14 @@ int main(int argc, char *argv [])
 	ros::init(argc, argv, "tcp_serveur");
     ros::NodeHandle n;
     
-    n.param<bool>("sending", isSending, false);
-
 	// Subscribe msgs
     ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
 	printf("Starting server\n");
-	serveur(29200);
+	int socket_RV 	= serveur(29200);
 
 	printf("Killing server\n");
 	close(socket_RV);
-	close(socket_service);
 
 	return EXIT_SUCCESS;
 }

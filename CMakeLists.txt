@@ -19,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   serial
 )
-find_package(OpenCV REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -158,7 +157,6 @@ add_executable(tcp_serveur  src/tcp_serveur.cpp)
 #add_executable(serveur  src/serveur.cpp)
 add_executable(serial   src/serial.cpp)
 add_executable(fix_rtk   src/tcp_rtk.cpp)
-#add_executable(video_tcp      src/video_tcp.cpp)
 
 add_executable(pololu         src/pololu.cpp)
 add_executable(regul_helios 	src/regul_helios.cpp)
@@ -194,11 +192,6 @@ target_link_libraries(serial
 target_link_libraries(fix_rtk
   ${catkin_LIBRARIES}
 )
-#target_link_libraries(video_tcp
-#  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
-#)
-
 
 target_link_libraries(pololu
   ${catkin_LIBRARIES}
