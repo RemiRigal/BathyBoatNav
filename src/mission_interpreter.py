@@ -22,10 +22,16 @@ def readFile():
 			for j in i['wayPoints'] :
 				latitudes[nbrMissions].append(j['latitude'])
 				longitudes[nbrMissions].append(j['longitude'])		
-		else :
+		elif i['type'] == "Radiale" :
 			missions[nbrMissions] = True;
+			for j in i['radiales'] :
+				latitudes[nbrMissions].append(j[0]['latitude'])
+				latitudes[nbrMissions].append(j[1]['latitude'])
+				longitudes[nbrMissions].append(j[0]['longitude'])
+				longitudes[nbrMissions].append(j[1]['longitude'])
+		
 		nbrMissions += 1
-	
+
 def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
 	res = {}
@@ -36,14 +42,16 @@ def sendPointService(req):
 		if not missions[nbrMissionsSent]:
 			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
 			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
-			
-			if not longitudes[nbrMissionsSent]:
-				nbrMissions = nbrMissions - nbrMissionsSent
-				nbrMissionsSent += 1
-	
-			res['nbrMissionNext'] = nbrMissions - 1
+
 		else: 
-			pass
+			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
+			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
+			
+		if not longitudes[nbrMissionsSent]:
+			nbrMissionsSent += 1
+
+		res['nbrMissionNext'] = nbrMissions - nbrMissionsSent
+
 	return res
 		
 
