@@ -1,5 +1,5 @@
 ---
 bool isRadiale
-float64[] longitude
-float64[] latitude
-int32 nbrMissionNext
+float64 longitude
+float64 latitude
+int32 remainingMissions
