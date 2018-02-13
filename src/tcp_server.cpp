@@ -12,6 +12,7 @@
 
 #include "ros/ros.h"
 
+#include "geometry_msgs/Twist.h"
 #include "std_msgs/String.h"
 
 using namespace std;
@@ -25,6 +26,9 @@ string msg;
 
 bool isSending;
 int port;
+
+double x[2], yaw, pitch, roll, vit, wifi_lvl;
+double u_yaw;
 
 // SIGACTION
 void signals_handler(int signal_number)
@@ -43,7 +47,9 @@ void send_to ()
 	char buffer[500];
 	while(ros::ok())
 	{
-		sprintf(buffer, "%s", msg.c_str());
+		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), x[0], x[1], yaw, roll, pitch, 0.0, 100.0);
+
+		//sprintf(buffer, "%s", msg.c_str());
 
 		//printf("%d\n", send(socket_service, buffer, strlen(buffer), 0));
 
@@ -144,9 +150,21 @@ void server(int port)
 	accept_loop();
 }
 
+/*
 void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 {
 	msg = ros_msg->data;
+}
+*/
+
+void dataCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    x[0] 	= msg->linear.x;
+    x[1] 	= msg->linear.y;
+
+    yaw 	= msg->angular.x;
+    roll 	= msg->angular.y;
+    pitch 	= msg->angular.z;
 }
 
 	// Main
@@ -175,7 +193,10 @@ int main(int argc, char *argv [])
     cout << "Type of server : " << isSending << " | Port : " << port << endl;
 
 	// Subscribe msgs
-    ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
+    //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
+
+    ros::Subscriber status_sub = n.subscribe("data_boat", 1000, dataCallback);
+
 
 	printf("Starting server\n");
 

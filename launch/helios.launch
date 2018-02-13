@@ -15,7 +15,7 @@
 
         <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
-        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
+        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 false" output="screen" />
 
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 
