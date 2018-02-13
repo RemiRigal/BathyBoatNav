@@ -1,19 +1,17 @@
 <launch>
     
-    <group ns="Environment">
-        <param name="Name_target" type="string" value="target"/>
-        <param name="Square_map" type="int" value="100"/>
-        <param name="Target_mode" type="string" value="line"/>
+    <group ns="mission">
 
-        <node name="cible" pkg="BathyBoatNav" type="target" output="screen"/>
+        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
+
     </group>
 
     <group ns="boat">
 
-        <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
 
         <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
+        
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
 

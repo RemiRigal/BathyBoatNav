@@ -1,0 +1,5 @@
+IMU :
+sensor_msgs::Imu imu
+geometry_msgs::PoseStamped imu_pose (euler angles)
+sensor_msgs::NavSatFix nav (ekf)
+sensor_msgs::NavSatFix fix (raw)

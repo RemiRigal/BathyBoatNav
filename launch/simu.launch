@@ -28,8 +28,6 @@
             
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
 
-        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
-
     </group>
 
 </launch>
