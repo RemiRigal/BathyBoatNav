@@ -17,18 +17,18 @@ def readFile():
 	jsonDict = json.loads(jsonFile.read())
 	global missions, nbrMissions, longitudes, latitudes
 	for i in jsonDict["missions"] :	
-		if i['type'] == "WayPoint" :
+		if i['type'] == "Waypoints" :
 			missions[nbrMissions] = False;
-			for j in i['wayPoints'] :
-				latitudes[nbrMissions].append(j['latitude'])
-				longitudes[nbrMissions].append(j['longitude'])		
-		elif i['type'] == "Radiale" :
+			for j in i['waypoints'] :
+				latitudes[nbrMissions].append(j['lat'])
+				longitudes[nbrMissions].append(j['lng'])		
+		elif i['type'] == "Radiales" :
 			missions[nbrMissions] = True;
 			for j in i['radiales'] :
-				latitudes[nbrMissions].append(j[0]['latitude'])
-				latitudes[nbrMissions].append(j[1]['latitude'])
-				longitudes[nbrMissions].append(j[0]['longitude'])
-				longitudes[nbrMissions].append(j[1]['longitude'])
+				latitudes[nbrMissions].append(j[0]['lat'])
+				latitudes[nbrMissions].append(j[1]['lat'])
+				longitudes[nbrMissions].append(j[0]['lng'])
+				longitudes[nbrMissions].append(j[1]['lng'])
 		
 		nbrMissions += 1
 		
@@ -36,21 +36,19 @@ def readFile():
 def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
 	res = {}
-	res['longitude'] = []
-	res['latitude'] = []
 	if nbrMissionsSent < nbrMissions and longitudes[nbrMissionsSent]:
 		res['isRadiale'] = missions[nbrMissionsSent]
 		if not missions[nbrMissionsSent]:
-			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
-			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
+			res['longitude'] = longitudes[nbrMissionsSent].pop(0)
+			res['latitude'] = latitudes[nbrMissionsSent].pop(0)
 		else: 
-			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
-			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
+			res['longitude'] = longitudes[nbrMissionsSent].pop(0)
+			res['latitude'] = latitudes[nbrMissionsSent].pop(0)
 			
 		if not longitudes[nbrMissionsSent]:
 			nbrMissionsSent += 1
 
-		res['nbrMissionNext'] = nbrMissions - nbrMissionsSent
+		res['remainingMissions'] = nbrMissions - nbrMissionsSent
 
 	return res
 		
