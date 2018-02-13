@@ -13,7 +13,7 @@ nbrMissions = 0
 nbrMissionsSent = 0
 
 def readFile():
-	jsonFile = open("/home/noelie/Documents/ProjetGuerledan/Noelie/mission1.json", "r")
+	jsonFile = open("/home/lallemfa/mission1.json", "r")
 	jsonDict = json.loads(jsonFile.read())
 	global missions, nbrMissions, longitudes, latitudes
 	for i in jsonDict["missions"] :	
@@ -25,8 +25,6 @@ def readFile():
 		else :
 			missions[nbrMissions] = True;
 		nbrMissions += 1
-	print longitudes
-	print latitudes
 	
 def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
@@ -38,10 +36,6 @@ def sendPointService(req):
 		if not missions[nbrMissionsSent]:
 			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
 			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
-			print longitudes
-			print latitudes
-			print res['longitude']
-			print res['latitude']
 			
 			if not longitudes[nbrMissionsSent]:
 				nbrMissions = nbrMissions - nbrMissionsSent
@@ -50,7 +44,6 @@ def sendPointService(req):
 			res['nbrMissionNext'] = nbrMissions - 1
 		else: 
 			pass
-	print res
 	return res
 		
 

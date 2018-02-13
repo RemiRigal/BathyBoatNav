@@ -9,12 +9,23 @@
     </group>
 
     <group ns="boat">
-
+        <param name="Pos_x" type="double" value="-50.0"/>
+        <param name="Pos_y" type="double" value="80.0"/>
+        <param name="Theta" type="double" value="-1.57"/>
+        
+        <param name="Cons_u" type="double" value="0.0"/>
+        
+        <param name="Name_boat" type="string" value="boat"/>
+        <param name="Vitesse_boat" type="double" value="1.0"/>
+        
+        <param name="Regul" type="string" value="line"/>
+        
         <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
 
-        <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
+        
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
+            
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
 
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />

@@ -24,6 +24,7 @@ socklen_t lgadresse;
 string msg;
 
 bool isSending;
+int port;
 
 // SIGACTION
 void signals_handler(int signal_number)
@@ -111,7 +112,7 @@ void accept_loop()
 	}
 }
 
-void serveur(int port)
+void server(int port)
 {
 	
 
@@ -152,7 +153,6 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 
 int main(int argc, char *argv [])
 {
-
 	// SIGACTION
     struct sigaction action;
     action.sa_handler = signals_handler;
@@ -166,13 +166,20 @@ int main(int argc, char *argv [])
 	ros::init(argc, argv, "tcp_serveur");
     ros::NodeHandle n;
     
-    n.param<bool>("sending", isSending, false);
+    //n.param<bool>("isSending", isSending, true);
+    //n.param<int>("port", port, 29200);
+
+    isSending = argv[2];
+    port = atoi(argv[1]);
+
+    cout << "Type of server : " << isSending << " | Port : " << port << endl;
 
 	// Subscribe msgs
     ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
 	printf("Starting server\n");
-	serveur(29200);
+
+	server(port);
 
 	printf("Killing server\n");
 	close(socket_RV);
