@@ -49,10 +49,6 @@ void send_to ()
 	{
 		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), x[0], x[1], yaw, roll, pitch, 0.0, 100.0);
 
-		//sprintf(buffer, "%s", msg.c_str());
-
-		//printf("%d\n", send(socket_service, buffer, strlen(buffer), 0));
-
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
 			printf("End of connection\n");
