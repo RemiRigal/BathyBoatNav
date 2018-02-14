@@ -35,11 +35,9 @@ double dist;
 string name;
 string state;
 
-bool computeDistance()
+void computeDistance()
 {
     dist = pow(pow(latitude_target - latitude_boat,2) + pow(longitude_target - longitude_boat,2), 0.5);
-    
-    return dist;
 }
 
 /*
@@ -75,7 +73,8 @@ int main(int argc, char** argv)
 
     u_yaw = 0;
     u_vitesse = 0;
-
+	
+    bool init = false;
 
         // Ros init
 
@@ -103,7 +102,10 @@ int main(int argc, char** argv)
 
     ros::Publisher cons_pub = n.advertise<geometry_msgs::Twist>("cons_boat", 1000);
     geometry_msgs::Twist cons_msgs;
-    
+
+    ros::Publisher debug_pub = n.advertise<geometry_msgs::Twist>("debug_boat", 1000);
+    geometry_msgs::Twist debug_msgs;
+
         // New GPS client
 
     ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
@@ -136,11 +138,28 @@ int main(int argc, char** argv)
 
         cons_msgs.angular.z = u_yaw;
         cons_msgs.linear.x  = 0;
-
         cons_pub.publish(cons_msgs);
 
-        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
+        debug_msgs.linear.x = latitude_target;
+        debug_msgs.linear.y = longitude_target;
+        debug_msgs.linear.z = dist;
+        debug_msgs.angular.x = gis;
+        debug_msgs.angular.y = e;
+
+        if(isRadiale)
         {
+        	debug_msgs.angular.z = 1;
+        } else {
+        	debug_msgs.angular.z = 0;
+        }
+
+
+        debug_pub.publish(debug_msgs);
+
+
+        if((dist < dist_max && ros::Time::now().toSec()-compt > 2.0) || init != true)
+        {
+            init = true;
             if (next_goal_client.call(next_goal_msg))
             {
                 if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
