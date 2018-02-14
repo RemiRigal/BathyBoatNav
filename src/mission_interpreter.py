@@ -31,19 +31,23 @@ def readFile():
 					longitudes[nbrMissions].append(j[1]['lng'])
 			
 			nbrMissions += 1
-
+		
+		
 def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
 	res = {}
+	res['longitude'] = [] 
+  	res['latitude'] = [] 
 	if nbrMissionsSent < nbrMissions and longitudes[nbrMissionsSent]:
 		res['isRadiale'] = missions[nbrMissionsSent]
 		if not missions[nbrMissionsSent]:
-
-			res['longitude'] = longitudes[nbrMissionsSent].pop(0)
-			res['latitude'] = latitudes[nbrMissionsSent].pop(0)
+			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
+			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
 		else: 
-			res['longitude'] = longitudes[nbrMissionsSent].pop(0)
-			res['latitude'] = latitudes[nbrMissionsSent].pop(0)
+			res['longitude'].append(longitudes[nbrMissionsSent].pop(1))
+			res['latitude'].append(latitudes[nbrMissionsSent].pop(1))
+			res['longitude'].append(longitudes[nbrMissionsSent].pop(0))
+			res['latitude'].append(latitudes[nbrMissionsSent].pop(0))
 			
 		if not longitudes[nbrMissionsSent]:
 			nbrMissionsSent += 1
