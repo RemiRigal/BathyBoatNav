@@ -14,6 +14,7 @@
 
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/String.h"
+#include "geometry_msgs/Pose2D.h"
 
 using namespace std;
 
@@ -27,7 +28,7 @@ string msg;
 bool isSending;
 int port;
 
-double x[2], yaw, pitch, roll, vit, wifi_lvl;
+double latitude, longitude, yaw, pitch, roll, vit, wifi_lvl;
 double u_yaw, u_throttle;
 
 // SIGACTION
@@ -47,7 +48,7 @@ void send_to ()
 	char buffer[500];
 	while(ros::ok())
 	{
-		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), x[0], x[1], yaw, roll, pitch, 0.0, 100.0);
+		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, 0.0, 100.0);
 
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -159,14 +160,12 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 }
 */
 
-void gpsCallback(const geometry_msgs::Twist::ConstPtr& msg)
+void gpsCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-    x[0] 	= msg->linear.x;
-    x[1] 	= msg->linear.y;
+    longitude 	= msg->x;
+    latitude 	= msg->y;
 
-    yaw 	= msg->angular.x;
-    roll 	= msg->angular.y;
-    pitch 	= msg->angular.z;
+    yaw 	= msg->theta;
 }
 
 void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
@@ -204,7 +203,7 @@ int main(int argc, char *argv [])
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber data_sub = n.subscribe("data_boat", 1000, gpsCallback);
+    ros::Subscriber data_sub = n.subscribe("gps_angle_boat", 1000, gpsCallback);
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
 
 

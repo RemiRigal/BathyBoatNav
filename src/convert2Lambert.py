@@ -24,9 +24,7 @@ def angleCallback(msg):
 	global roll, pitch, yaw
 	
 	orientation_list = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w];
-	print(orientation_list)
 	(roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-	print(yaw)
 
 def convert():
 	global latitude, longitude
@@ -60,7 +58,6 @@ while not rospy.is_shutdown():
 	x_lambert, y_lambert = convert()
 
 	pose = Pose2D(x_lambert, y_lambert, yaw)
-	print(pose)
 
 	pub.publish(pose) 
 
