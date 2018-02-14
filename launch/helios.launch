@@ -1,5 +1,8 @@
 <launch>
 
+    <include file="$(find sbg_ros_driver-1.0.7)/launch/sbg_ellipse_helios.launch">
+    </include>
+
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 
     
@@ -29,7 +32,6 @@
 
     <node name="rosbag_record_diag" pkg="rosbag" type="record" 
             args="record -o /home/lallemfa/bags/helios -a"/>
-
 
 
 </launch>

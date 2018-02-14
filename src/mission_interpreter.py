@@ -13,7 +13,7 @@ nbrMissions = 0
 nbrMissionsSent = 0
 
 def readFile():
-	with open("/home/lallemfa/BathyBoatMissions/mission.json", "r") as jsonFile:
+	with open("/home/guerledan4/BathyBoatMissions/mission.json", "r") as jsonFile:
 		jsonDict = json.loads(jsonFile.read())
 		global missions, nbrMissions, longitudes, latitudes
 		for i in jsonDict["missions"] :	
