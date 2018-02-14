@@ -13,7 +13,8 @@
 #include "ros/ros.h"
 
 #include "sensor_msgs/NavSatFix.h"
-#include "geometry_msgs/Twist.h"
+#include "geometry_msgs/TwistStamped.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/Pose2D.h"
 
@@ -165,8 +166,8 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 
 void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
-    longitude 	= msg->latitude;
-    latitude 	= msg->longitude;
+    latitude 	= msg->latitude;
+    longitude 	= msg->longitude;
 }
 
 void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
@@ -175,9 +176,14 @@ void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
     u_yaw 		= msg->angular.z;
 }
 
-void velCallback(const geometry_msgs::Twist::ConstPtr& msg)
+void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
-    vit = msg->linear.x;
+    vit = msg->twist.linear.x;
+}
+
+void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
+{
+    yaw = msg->vector.z;
 }
 
 	// Main
@@ -210,9 +216,10 @@ int main(int argc, char *argv [])
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber gps_sub = n.subscribe("nav", 1000, gpsCallback);
-    ros::Subscriber vel_sub = n.subscribe("nav_vel", 1000, velCallback);
-    ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
+	ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
+    ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
+    ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
+    ros::Subscriber cons_sub 	= n.subscribe("cons_boat", 1000, consCallback);
 
 
 	printf("Starting server\n");
