@@ -44,30 +44,30 @@ int main(int argc, char *argv [])
 		// Ros init
 
 	ros::init(argc, argv, "pololu");
-    ros::NodeHandle n;
+	ros::NodeHandle n;
     
-    ros::Rate loop_rate(25);
+	ros::Rate loop_rate(25);
     
         // Initials parameters
     
-    n.param<string>("Path", path, "/dev/pololu_servo_serial");
-    n.param<string>("Cons_channel", channel, "/key_vel");
-    n.param<int>("Turn_gap", gap, 500);
+	n.param<string>("Path", path, "/dev/pololu_servo_serial");
+	n.param<string>("Cons_channel", channel, "/key_vel");
+	n.param<int>("Turn_gap", gap, 500);
 
     	// Connection to Maestro
 
-   	if( (fd = maestroConnect(path.c_str())) == -1 )
-   	{
-   		perror("Unable to find Pololu");
-   		exit(1);
-   	}
+	if( (fd = maestroConnect(path.c_str())) == -1 )
+	{
+		perror("Unable to find Pololu");
+		exit(1);
+	}
 
 	printf("Pololu connected\n");
 	init_servo(fd);
 
 		// Subscribe msgs
 
-    ros::Subscriber cons_sub = n.subscribe(channel, 1000, chatCallback);
+	ros::Subscriber cons_sub = n.subscribe(channel, 1000, chatCallback);
 
 	while(ros::ok())
 	{
@@ -81,7 +81,7 @@ int main(int argc, char *argv [])
 		maestroSetTarget(fd, 1, right_mot);
 
 		ros::spinOnce();
-        loop_rate.sleep();
+		loop_rate.sleep();
 	}
 
 	exit(0);
