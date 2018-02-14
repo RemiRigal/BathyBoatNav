@@ -6,6 +6,7 @@
 
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/NavSatFix.h"
+#include "geometry_msgs/Pose2D.h"
 #include "BathyBoatNav/next_goal.h"
 
 #include "tf/tf.h"
@@ -41,6 +42,7 @@ bool computeDistance()
     return dist;
 }
 
+/*
 void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
     latitude_boat   = msg->latitude;
@@ -58,7 +60,14 @@ void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
 
     tf::Matrix3x3(q_boat).getRPY(roll, pitch, yaw_boat);
 }
+*/
 
+void callback(const geometry_msgs::Pose2D::ConstPtr& msg)
+{
+    latitude_boat   = msg->x;
+    longitude_boat  = msg->y;
+    yaw_boat        = msg->theta;
+}
 
 int main(int argc, char** argv)
 {
@@ -82,9 +91,11 @@ int main(int argc, char** argv)
     n.param<double>("Accept_gap", dist_max, 3.0);
 
         // Info boat
-
-    ros::Subscriber gps_sub     = n.subscribe("nav",        1000, gpsCallback);
+/*
+    ros::Subscriber gps_sub     = n.subscribe("nav",   1000, gpsCallback);
     ros::Subscriber angle_sub   = n.subscribe("imu",   1000, angleCallback);
+*/
+    ros::Subscriber data_sub   = n.subscribe("gps_angle_boat",   1000, callback);
 
         // Consigne
 
@@ -101,6 +112,7 @@ int main(int argc, char** argv)
         double det;
 
         computeDistance();
+        ROS_INFO("Dist to waypoint : %d\n", dist);
 
         if(isRadiale)
         {

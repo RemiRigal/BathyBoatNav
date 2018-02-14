@@ -48,7 +48,7 @@ int main(int argc, char *argv [])
         // Initials parameters
     
     n.param<string>("Path", path, "/dev/pololu");
-    n.param<string>("Msg_name", channel, "/key_vel");
+    n.param<string>("Cons_channel", channel, "/key_vel");
     n.param<int>("Turn_gap", gap, 100);
 
     	// Connection to Maestro
