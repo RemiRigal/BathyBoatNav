@@ -6,22 +6,35 @@ import pyproj
 
 from geometry_msgs.msg import Pose2D
 from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import Imu
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
-global latitude, longitude, pose
+latitude 	= 0.0
+longitude 	= 0.0
 
-latitude 	= 0
-longitude 	= 0
+roll = pitch = yaw = 0.0
 
-def callback(msg): 
-    latitude   = msg.latitude;
-    longitude  = msg.longitude;
-    print("Hey")
+def gpsCallback(msg):
+	global latitude, longitude
+
+	latitude   = msg.latitude
+	longitude  = msg.longitude
+
+def angleCallback(msg):
+	global roll, pitch, yaw
+	
+	orientation_list = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w];
+	print(orientation_list)
+	(roll, pitch, yaw) = euler_from_quaternion (orientation_list)
+	print(yaw)
 
 def convert():
+	global latitude, longitude
+
 	PROJECT = partial(
-    pyproj.transform,
-    pyproj.Proj(init='epsg:4326'),
-    pyproj.Proj(init='epsg:2154'))
+	pyproj.transform,
+	pyproj.Proj(init='epsg:4326'),
+	pyproj.Proj(init='epsg:2154'))
 
 	x_lambert, y_lambert = PROJECT(longitude, latitude)
 
@@ -29,26 +42,26 @@ def convert():
 
 rospy.init_node('convert2Lambert') 
 
-input_msg 	= rospy.get_param('Input_msg', 'input_msg')
-output_msg 	= rospy.get_param('Output_msg', 'output_msg')
+input_GPS_msg 	= rospy.get_param('Input_GPS_msg', 'nav')
+input_yaw_msg 	= rospy.get_param('Input_yaw_msg', 'imu')
+output_msg 		= rospy.get_param('Output_msg', 'gps_angle_boat')
 
 
-sub = rospy.Subscriber(input_msg, NavSatFix, callback) 
+sub = rospy.Subscriber(input_GPS_msg, NavSatFix, gpsCallback) 
+sub = rospy.Subscriber(input_yaw_msg, Imu, angleCallback) 
 pub = rospy.Publisher(output_msg, Pose2D, queue_size=10)
 
-rate = rospy.Rate(2) 
+rate = rospy.Rate(25) 
 
 pose = Pose2D()
 
 while not rospy.is_shutdown(): 
 
 	x_lambert, y_lambert = convert()
-	print(x_lambert, y_lambert)
 
-	pose = Pose2D(x_lambert, y_lambert, 0)
+	pose = Pose2D(x_lambert, y_lambert, yaw)
 	print(pose)
 
 	pub.publish(pose) 
 
-	rospy.spin()
 	rate.sleep() 

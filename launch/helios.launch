@@ -13,9 +13,9 @@
     <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 false" output="screen" />
 
     <node name="pololu" pkg="BathyBoatNav" type="pololu">
-        <param name="Path"      type="string"   value="/dev/pololu"/>
-        <param name="Msg_name"  type="string"   value="cons_boat"/>
-        <param name="Turn_gap"  type="int"      value="100"/>
+        <param name="Path"          type="string"   value="/dev/pololu"/>
+        <param name="Cons_channel"  type="string"   value="cons_boat"/>
+        <param name="Turn_gap"      type="int"      value="100"/>
     </node>
 
 <!--

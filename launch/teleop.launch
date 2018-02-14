@@ -3,9 +3,9 @@
     <node name="key_teleop" pkg="key_teleop" type="key_teleop.py" output="screen"/>
 
     <node name="pololu" pkg="BathyBoatNav" type="pololu">
-        <param name="Path" 		type="string" 	value="/dev/pololu"/>
-        <param name="Msg_name" 	type="string" 	value="/key_vel"/>
-        <param name="Turn_gap" 	type="int" 		value="100"/>
+        <param name="Path" 			type="string" 	value="/dev/pololu"/>
+        <param name="Cons_channel" 	type="string" 	value="/key_vel"/>
+        <param name="Turn_gap" 		type="int" 		value="100"/>
     </node>
 
  	<node name="rosbag_record_diag" pkg="rosbag" type="record" 

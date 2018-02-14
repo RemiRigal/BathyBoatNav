@@ -153,7 +153,7 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 }
 */
 
-void dataCallback(const geometry_msgs::Twist::ConstPtr& msg)
+void gpsCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     x[0] 	= msg->linear.x;
     x[1] 	= msg->linear.y;
@@ -191,7 +191,7 @@ int main(int argc, char *argv [])
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber status_sub = n.subscribe("data_boat", 1000, dataCallback);
+    ros::Subscriber status_sub = n.subscribe("data_boat", 1000, gpsCallback);
 
 
 	printf("Starting server\n");
