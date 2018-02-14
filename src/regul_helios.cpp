@@ -41,6 +41,7 @@ bool computeDistance()
     
     return dist;
 }
+sudo socat -d -d /dev/gps,raw,echo=0,b9600 /dev/sbg_aux,raw,echo=0,b9600
 
 /*
 void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)

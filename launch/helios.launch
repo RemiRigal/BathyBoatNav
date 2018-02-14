@@ -1,7 +1,6 @@
 <launch>
 
-    <include file="$(find sbg_ros_driver-1.0.7)/launch/sbg_ellipse_helios.launch">
-    </include>
+    <include file="$(find sbg_ros_driver-1.0.7)/launch/sbg_ellipse_helios.launch"/>
 
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 
@@ -20,15 +19,6 @@
         <param name="Cons_channel"  type="string"   value="cons_boat"/>
         <param name="Turn_gap"      type="int"      value="100"/>
     </node>
-
-<!--
-    <node name="serial" pkg="BathyBoatNav" type="serial" output="screen">
-        <param name="Path"      type="string"   value="/dev/ttyUSB20"/>
-        <param name="Baudrate"  type="int"      value="4800"/>
-
-        roslaunch sbg_driver sbg_ellipse_helios.launch
-    </node>
--->
 
     <node name="rosbag_record_diag" pkg="rosbag" type="record" 
             args="record -o /home/lallemfa/bags/helios -a"/>

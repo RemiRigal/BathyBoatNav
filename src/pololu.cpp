@@ -22,7 +22,7 @@ void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 
 void init_servo(int fd)
 {
-	maestroSetTarget(fd, 0, 6000);
+	maestroSetTarget(fd, 0, 6144);
 	maestroSetTarget(fd, 1, 6000);
 	sleep(2);
 }
