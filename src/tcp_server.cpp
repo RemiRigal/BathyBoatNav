@@ -28,7 +28,7 @@ bool isSending;
 int port;
 
 double x[2], yaw, pitch, roll, vit, wifi_lvl;
-double u_yaw;
+double u_yaw, u_throttle;
 
 // SIGACTION
 void signals_handler(int signal_number)
@@ -55,7 +55,13 @@ void send_to ()
 			break;
 		}
 
-		printf("Sent : %s\n", buffer);
+		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(),  (u_throttle + u_yaw)*100, (u_throttle - u_yaw)*100);
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
 
 		ros::spinOnce();
         loop_rate.sleep();
@@ -163,6 +169,13 @@ void gpsCallback(const geometry_msgs::Twist::ConstPtr& msg)
     pitch 	= msg->angular.z;
 }
 
+void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    u_throttle 	= msg->linear.x;
+    u_yaw 		= msg->angular.z;
+}
+
+
 	// Main
 
 int main(int argc, char *argv [])
@@ -191,7 +204,8 @@ int main(int argc, char *argv [])
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber status_sub = n.subscribe("data_boat", 1000, gpsCallback);
+    ros::Subscriber data_sub = n.subscribe("data_boat", 1000, gpsCallback);
+    ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
 
 
 	printf("Starting server\n");
