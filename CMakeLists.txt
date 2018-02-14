@@ -17,8 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   message_generation
-  serial
-)
+ )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -151,7 +150,6 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/BathyBoatNav_node.cpp)
 
 add_executable(tcp_server  src/tcp_server.cpp)
-add_executable(serial   src/serial.cpp)
 
 add_executable(pololu             src/pololu.cpp)
 add_executable(regul_helios       src/regul_helios.cpp)
@@ -182,9 +180,7 @@ target_link_libraries(tcp_server
 #target_link_libraries(serveur
 #  ${catkin_LIBRARIES}
 #)
-target_link_libraries(serial
-  ${catkin_LIBRARIES}
-)
+
 #target_link_libraries(fix_rtk
 #  ${catkin_LIBRARIES}
 #)
