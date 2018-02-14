@@ -25,10 +25,10 @@ def readFile():
 			elif i['type'] == "Radiales" :
 				missions[nbrMissions] = True;
 				for j in i['radiales'] :
-					latitudes[nbrMissions].append(j[0]['lat'])
-					latitudes[nbrMissions].append(j[1]['lat'])
-					longitudes[nbrMissions].append(j[0]['lng'])
-					longitudes[nbrMissions].append(j[1]['lng'])
+					latitudes[nbrMissions].append(j["start"]['lat'])
+					latitudes[nbrMissions].append(j["end"]['lat'])
+					longitudes[nbrMissions].append(j["start"]['lng'])
+					longitudes[nbrMissions].append(j["end"]['lng'])
 			
 			nbrMissions += 1
 		
