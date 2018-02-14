@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 
         // New GPS client
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
     
     while(ros::ok())
@@ -159,7 +159,6 @@ int main(int argc, char** argv)
 
         if((dist < dist_max && ros::Time::now().toSec()-compt > 2.0) || init != true)
         {
-            init = true;
             if (next_goal_client.call(next_goal_msg))
             {
                 if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
@@ -175,6 +174,7 @@ int main(int argc, char** argv)
                 } else {
                     state = "IDLE";
                 }
+                init = true;
             } else{
                 ROS_ERROR("Failed to call service");
             }

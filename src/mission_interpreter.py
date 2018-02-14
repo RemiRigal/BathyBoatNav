@@ -60,7 +60,7 @@ def sendPointService(req):
 if __name__ == "__main__":
 	readFile()
 	rospy.init_node('mission_interpreter')
-	s = rospy.Service('/next_goal', next_goal, sendPointService)
+	s = rospy.Service('next_goal', next_goal, sendPointService)
 	rospy.spin()
 		
 		
