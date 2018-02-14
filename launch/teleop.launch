@@ -9,6 +9,6 @@
     </node>
 
  	<node name="rosbag_record_diag" pkg="rosbag" type="record" 
- 			args="record -o /home/lallemfa/bags/ -a"/>
+ 			args="record -o /home/lallemfa/bags/teleop -a"/>
 
 </launch>

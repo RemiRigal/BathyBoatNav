@@ -17,6 +17,8 @@
 
 using namespace std;
 
+const double Pi = 3.14159265358979323846;
+
 double gis;
 double target_x, target_y;
 
@@ -29,8 +31,6 @@ double u_vitesse;
 string name;
 string name_wing;
 string regul;
-
-const double Pi = 3.14159265358979323846;
 
 bool checkDistance()
 {
@@ -45,7 +45,6 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
 
     n.param<string>("Name_boat", name, "unknown");
-    n.param<string>("Regul", regul, "unknown");
 
     u_yaw = 0;
     u_vitesse = 0;

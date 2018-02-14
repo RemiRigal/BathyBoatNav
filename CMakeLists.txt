@@ -154,9 +154,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/BathyBoatNav_node.cpp)
 
 add_executable(tcp_server  src/tcp_server.cpp)
-#add_executable(serveur  src/serveur.cpp)
 add_executable(serial   src/serial.cpp)
-#add_executable(fix_rtk   src/tcp_rtk.cpp)
 
 add_executable(pololu         src/pololu.cpp)
 add_executable(regul_helios 	src/regul_helios.cpp)
