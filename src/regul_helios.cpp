@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     double compt = ros::Time::now().toSec();
 
 
-        // Initials parameters
+	        // Initials parameters
 
     n.param<string>("Name_boat", name, "helios");
     n.param<double>("Accept_gap", dist_max, 3.0);
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 
         // New GPS client
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
     BathyBoatNav::next_goal next_goal_msg;
     
     while(ros::ok())
