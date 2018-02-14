@@ -1,22 +1,31 @@
 <launch>
+
+    <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
+
     
-    <group ns="mission">
+    <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
+        <param name="Name_boat" type="string" value="boat"/>
+    </node>
 
-        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
+    <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
+    
+    <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
+    <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 false" output="screen" />
 
-    </group>
+    <node name="pololu" pkg="BathyBoatNav" type="pololu">
+        <param name="Path"      type="string"   value="/dev/pololu"/>
+        <param name="Msg_name"  type="string"   value="cons_boat"/>
+        <param name="Turn_gap"  type="int"      value="100"/>
+    </node>
 
-    <group ns="boat">
+<!--
+    <node name="serial" pkg="BathyBoatNav" type="serial" output="screen">
+        <param name="Path"      type="string"   value="/dev/ttyUSB20"/>
+        <param name="Baudrate"  type="int"      value="4800"/>
+    </node>
+-->
 
-        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
-
-        <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
-        
-        <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
-        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 false" output="screen" />
-
-        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
-
-    </group>
+    <node name="rosbag_record_diag" pkg="rosbag" type="record" 
+            args="record -o /home/lallemfa/bags/helios -a"/>
 
 </launch>
