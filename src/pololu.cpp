@@ -43,7 +43,7 @@ int main(int argc, char *argv [])
 	ros::init(argc, argv, "pololu");
     ros::NodeHandle n;
     
-    ros::Rate loop_rate(10);
+    ros::Rate loop_rate(25);
     
         // Initials parameters
     
@@ -71,7 +71,7 @@ int main(int argc, char *argv [])
 		left_mot 	= 6000 + u_throttle*(2000 - gap) + u_yaw*gap;
 		right_mot 	= 6000 + u_throttle*(2000 - gap) - u_yaw*gap;
 
-		ROS_INFO("\nu_throttle -> %lf\n u_yaw -> %lf\n Cons_pololu = (%lf, %lf)\n", u_throttle, u_yaw, left_mot, right_mot);
+		ROS_INFO("\nu_throttle -> %lf\nu_yaw -> %lf\nCons_pololu = (%lf, %lf)\n", u_throttle, u_yaw, left_mot, right_mot);
 
 		maestroSetTarget(fd, 0, left_mot);
 		maestroSetTarget(fd, 1, right_mot);

@@ -1,133 +1,114 @@
-#include "ros/ros.h"
 #include <iostream>
 #include <string>
 #include <cmath>
 
-#include "std_msgs/Float64.h"
-#include "geometry_msgs/PoseStamped.h"
-#include "geometry_msgs/Twist.h"
-#include "geometry_msgs/TransformStamped.h"
-#include "visualization_msgs/Marker.h"
+#include "ros/ros.h"
+
+#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/NavSatFix.h"
+#include "BathyBoatNav/next_goal.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
-#include "tf2_ros/transform_listener.h"
-
-#include "std_srvs/Empty.h"
 
 using namespace std;
 
 const double Pi = 3.14159265358979323846;
 
 double gis;
-double target_x, target_y;
 
-double x_boat, y_boat;
-double roll, pitch, yaw_boat, yaw_target;
+double latitude_target, longitude_target;
+bool isRadiale;
+int still_n_mission;
+
+double latitude_boat, longitude_boat;
+double roll, pitch, yaw_boat, yaw_radiale;
+
+double dist_max;
 
 double u_yaw;
 double u_vitesse;
 
-string name;
-string name_wing;
-string regul;
+double dist;
 
-bool checkDistance()
+string name;
+string state;
+
+bool computeDistance()
 {
-    double dist = pow(pow(target_x - x_boat,2) + pow(target_y - y_boat,2), 0.5);
+    dist = pow(pow(latitude_target - latitude_boat,2) + pow(longitude_target - longitude_boat,2), 0.5);
     
-    return (dist<3.0) ? true : false;
+    return dist;
 }
+
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+{
+    latitude_boat   = msg->latitude;
+    longitude_boat  = msg->longitude;
+}
+
+void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
+{
+    tf::Quaternion q_boat;
+
+    q_boat.setX(msg->orientation.x);
+    q_boat.setY(msg->orientation.y);
+    q_boat.setZ(msg->orientation.z);
+    q_boat.setW(msg->orientation.w);
+
+    tf::Matrix3x3(q_boat).getRPY(roll, pitch, yaw_boat);
+}
+
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "regul_helios");
-    ros::NodeHandle n;
-
-    n.param<string>("Name_boat", name, "unknown");
+    double e;
 
     u_yaw = 0;
     u_vitesse = 0;
-    
-    target_x = 0;
-    target_y = 0;
-    
-    double e;
 
-    tf::Quaternion q_boat;
-    tf::Quaternion q_target;
-    
+    double compt = ros::Time::now().toSec();
+
+        // Ros init
+
+    ros::init(argc, argv, "regul_helios");
+    ros::NodeHandle n;
+
     ros::Rate loop_rate(25);
 
-        // Tf Listener
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener tfListener(tfBuffer);
+        // Initials parameters
 
-    geometry_msgs::TransformStamped listenTarget;
-    geometry_msgs::TransformStamped listenBoat;
+    n.param<string>("Name_boat", name, "helios");
+    n.param<double>("Accept_gap", dist_max, 3.0);
+
+        // Info boat
+
+    ros::Subscriber gps_sub     = n.subscribe("nav",        1000, gpsCallback);
+    ros::Subscriber angle_sub   = n.subscribe("imu",   1000, angleCallback);
 
         // Consigne
+
     ros::Publisher cons_pub = n.advertise<geometry_msgs::Twist>("cons_boat", 1000);
     geometry_msgs::Twist cons_msgs;
     
         // New GPS client
-    ros::ServiceClient new_gps_client = n.serviceClient<std_srvs::Empty>("/new_gps_trigger");
-    std_srvs::Empty null_msg;
-        
-    double compt = ros::Time::now().toSec();
-    
-    // right_depth = -10;
 
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
+    BathyBoatNav::next_goal next_goal_msg;
+    
     while(ros::ok())
     {
-            // Coord Boat
-        try{
-            listenBoat = tfBuffer.lookupTransform("map", name, ros::Time(0));
-        }
-        catch (tf2::TransformException &ex) {
-            ROS_WARN("%s",ex.what());
-            ros::Duration(1.0).sleep();
-            continue;
-        }
-
-        x_boat = listenBoat.transform.translation.x;
-        y_boat = listenBoat.transform.translation.y;
-
-        q_boat.setX(listenBoat.transform.rotation.x);
-        q_boat.setY(listenBoat.transform.rotation.y);
-        q_boat.setZ(listenBoat.transform.rotation.z);
-        q_boat.setW(listenBoat.transform.rotation.w);
-
-        tf::Matrix3x3(q_boat).getRPY(roll, pitch, yaw_boat);
-
-            // Coord cible
-        try{
-            listenTarget = tfBuffer.lookupTransform("map", "target", ros::Time(0));
-        }
-        catch (tf2::TransformException &ex) {
-            ROS_WARN("%s",ex.what());
-            ros::Duration(1.0).sleep();
-            continue;
-        }
-
-        target_x = listenTarget.transform.translation.x;
-        target_y = listenTarget.transform.translation.y;
-
-        q_target.setX(listenTarget.transform.rotation.x);
-        q_target.setY(listenTarget.transform.rotation.y);
-        q_target.setZ(listenTarget.transform.rotation.z);
-        q_target.setW(listenTarget.transform.rotation.w);
-    
-        tf::Matrix3x3(q_target).getRPY(roll, pitch, yaw_target);
-
         double det;
 
-        if(regul.compare("yaw") == 0)
+        computeDistance();
+
+        if(isRadiale)
         {
-            gis = atan2(target_y - y_boat, target_x - x_boat);
-        } else if(regul.compare("line") == 0) {
-            det     = (x_boat - target_x)*(-sin(yaw_target)) - (-cos(yaw_target))*(y_boat - target_y);
-            gis     = (yaw_target - atan(det)/2.0) - yaw_boat;
+            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
+            det     = sin(yaw_radiale - yaw_boat - gis) * dist;
+            gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat;  
+        } else {
+            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
         }
 
         e   = 2*atan(tan(gis/2));
@@ -138,18 +119,30 @@ int main(int argc, char** argv)
             u_yaw = 0.8;
         } else {
             u_yaw = atan(e)/3.0;
-
         }
 
         cons_msgs.angular.z = u_yaw;
+        cons_msgs.linear.x  = 0;
 
         cons_pub.publish(cons_msgs);
-        
-        if(checkDistance() && ros::Time::now().toSec()-compt > 2.0)
+
+        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
         {
-            if (new_gps_client.call(null_msg))
+            if (next_goal_client.call(next_goal_msg))
             {
-                ROS_INFO("Message from regul_helios delivered");
+                if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
+                {
+                    isRadiale           = next_goal_msg.response.isRadiale;
+                    latitude_target     = next_goal_msg.response.latitude[0];
+                    longitude_target    = next_goal_msg.response.longitude[0];
+                    still_n_mission     = next_goal_msg.response.remainingMissions;
+                    if(isRadiale)
+                    {
+                        yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                    }
+                } else {
+                    state = "IDLE";
+                }
             } else{
                 ROS_ERROR("Failed to call service");
             }

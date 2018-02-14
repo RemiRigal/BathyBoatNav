@@ -69,9 +69,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_service_files(
   FILES
-  depth.srv
-  Point.srv
-  dist.srv
   next_goal.srv
 )
 
@@ -156,9 +153,10 @@ include_directories(
 add_executable(tcp_server  src/tcp_server.cpp)
 add_executable(serial   src/serial.cpp)
 
-add_executable(pololu         src/pololu.cpp)
-add_executable(regul_helios 	src/regul_helios.cpp)
-add_executable(simu_helios 	  src/simu_helios.cpp)
+add_executable(pololu             src/pololu.cpp)
+add_executable(regul_helios       src/regul_helios.cpp)
+add_executable(regul_helios_simu  src/regul_helios_simu.cpp)
+add_executable(simu_helios 	      src/simu_helios.cpp)
 
 add_executable(target   src/target.cpp)
 
@@ -194,13 +192,17 @@ target_link_libraries(serial
 target_link_libraries(pololu
   ${catkin_LIBRARIES}
 )
+
 target_link_libraries(regul_helios
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(regul_helios_simu
   ${catkin_LIBRARIES}
 )
 target_link_libraries(simu_helios
   ${catkin_LIBRARIES}
 )
-
 target_link_libraries(target
   ${catkin_LIBRARIES}
 )

@@ -21,7 +21,7 @@
         <param name="Regul" type="string" value="line"/>
         
         <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
-        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" />
+        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios_simu" output="screen" />
 
         
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
