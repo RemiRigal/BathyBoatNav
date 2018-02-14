@@ -1,6 +1,7 @@
 <launch>
 
-    <include file="$(find sbg_ros_driver-1.0.7)/launch/sbg_ellipse_helios.launch"/>
+
+    <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
 
     <node name="key_teleop" pkg="key_teleop" type="key_teleop.py" output="screen"/>
 
@@ -11,11 +12,11 @@
     </node>
 
  	<node name="rosbag_record_diag" pkg="rosbag" type="record" 
- 			args="record -o /home/lallemfa/bags/teleop -a"/>
+ 			args="record -o /home/guerledan4/bags/teleop -a"/>
  			
     <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
         
     <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
 
-
 </launch>
+

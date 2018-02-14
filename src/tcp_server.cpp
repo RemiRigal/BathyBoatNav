@@ -14,6 +14,7 @@
 
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/String.h"
+#include "geometry_msgs/Pose2D.h"
 
 using namespace std;
 
@@ -158,16 +159,15 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 	msg = ros_msg->data;
 }
 */
-void callback(const geometry_msgs::Pose2D::ConstPtr& msg)
-{
 
-}
+
 
 void gpsCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
 {
-	latitude   = msg->x;
-    longitude  = msg->y;
-    yaw        = msg->theta;
+    longitude 	= msg->x;
+    latitude 	= msg->y;
+
+    yaw 	= msg->theta;
 }
 
 void consCallback(const geometry_msgs::Twist::ConstPtr& msg)

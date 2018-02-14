@@ -22,8 +22,9 @@ void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 
 void init_servo(int fd)
 {
-	maestroSetTarget(fd, 0, 6144);
-	maestroSetTarget(fd, 1, 6000);
+	maestroSetTarget(fd, 0, 4000);
+	maestroSetTarget(fd, 1, 4000);
+	
 	sleep(2);
 }
 
@@ -37,6 +38,8 @@ int main(int argc, char *argv [])
 	int gap;
 
 	double left_mot, right_mot;
+	left_mot = 0;
+	right_mot = 0;
 
 		// Ros init
 
@@ -47,9 +50,9 @@ int main(int argc, char *argv [])
     
         // Initials parameters
     
-    n.param<string>("Path", path, "/dev/pololu");
+    n.param<string>("Path", path, "/dev/polulu_servo_serial");
     n.param<string>("Cons_channel", channel, "/key_vel");
-    n.param<int>("Turn_gap", gap, 100);
+    n.param<int>("Turn_gap", gap, 500);
 
     	// Connection to Maestro
 
@@ -68,11 +71,11 @@ int main(int argc, char *argv [])
 
 	while(ros::ok())
 	{
-		left_mot 	= 6000 + u_throttle*(2000 - gap) + u_yaw*gap;
-		right_mot 	= 6000 + u_throttle*(2000 - gap) - u_yaw*gap;
+		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
+		right_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
 
-		ROS_INFO("\nu_throttle -> %lf\nu_yaw -> %lf\nCons_pololu = (%lf, %lf)\n", u_throttle, u_yaw, left_mot, right_mot);
-
+		ROS_INFO("Cons_pololu = (%lf, %lf)\n", left_mot, right_mot);
+	
 		maestroSetTarget(fd, 0, left_mot);
 		maestroSetTarget(fd, 1, right_mot);
 
