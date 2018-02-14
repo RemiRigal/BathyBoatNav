@@ -50,7 +50,7 @@ int main(int argc, char *argv [])
     
         // Initials parameters
     
-    n.param<string>("Path", path, "/dev/polulu_servo_serial");
+    n.param<string>("Path", path, "/dev/pololu_servo_serial");
     n.param<string>("Cons_channel", channel, "/key_vel");
     n.param<int>("Turn_gap", gap, 500);
 
@@ -74,7 +74,8 @@ int main(int argc, char *argv [])
 		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
 		right_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
 
-		ROS_INFO("Cons_pololu = (%lf, %lf)\n", left_mot, right_mot);
+		ROS_INFO("Consignes 	= (%lf, %lf)\n", u_throttle, u_yaw);
+		ROS_INFO("Cons_pololu	= (%lf, %lf)\n", left_mot, right_mot);
 	
 		maestroSetTarget(fd, 0, left_mot);
 		maestroSetTarget(fd, 1, right_mot);

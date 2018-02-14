@@ -4,7 +4,7 @@
 
     <node name="pololu" pkg="BathyBoatNav" type="pololu">
 
-        <param name="Path" 			type="string" 	value="/dev/polulu_servo_serial"/>
+        <param name="Path" 			type="string" 	value="/dev/pololu_servo_serial"/>
         
         <param name="Cons_channel" 	type="string" 	value="/key_vel"/>
         <param name="Turn_gap" 		type="int" 		value="500"/>
