@@ -49,7 +49,7 @@ void send_to ()
 	char buffer[500];
 	while(ros::ok())
 	{
-		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, 0.0, 100.0);
+		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, vit, 100.0);
 
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -175,6 +175,10 @@ void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
     u_yaw 		= msg->angular.z;
 }
 
+void velCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    vit = msg->linear.x;
+}
 
 	// Main
 
@@ -207,6 +211,7 @@ int main(int argc, char *argv [])
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
     ros::Subscriber gps_sub = n.subscribe("nav", 1000, gpsCallback);
+    ros::Subscriber vel_sub = n.subscribe("nav_vel", 1000, velCallback);
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
 
 
