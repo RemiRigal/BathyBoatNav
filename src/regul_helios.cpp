@@ -140,26 +140,26 @@ int main(int argc, char** argv)
         cons_msgs.linear.x  = 0;
         cons_pub.publish(cons_msgs);
 
-	debug_msgs.linear.x = latitude_target;
-	debug_msgs.linear.y = longitude_target;
-	debug_msgs.linear.z = dist;
-	debug_msgs.angular.x = gis;
-	debug_msgs.angular.y = e;
+        debug_msgs.linear.x = latitude_target;
+        debug_msgs.linear.y = longitude_target;
+        debug_msgs.linear.z = dist;
+        debug_msgs.angular.x = gis;
+        debug_msgs.angular.y = e;
 
-	if(isRadiale)
-	{
-		debug_msgs.angular.z = 1;
-	} else {
-		debug_msgs.angular.z = 0;
-	}
+        if(isRadiale)
+        {
+        	debug_msgs.angular.z = 1;
+        } else {
+        	debug_msgs.angular.z = 0;
+        }
 
 
         debug_pub.publish(debug_msgs);
 
 
-        if((dist < dist_max && ros::Time::now().toSec()-compt > 2.0) || init == true)
+        if((dist < dist_max && ros::Time::now().toSec()-compt > 2.0) || init != true)
         {
-	    init = true;
+            init = true;
             if (next_goal_client.call(next_goal_msg))
             {
                 if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
