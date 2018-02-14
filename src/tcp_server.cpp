@@ -12,8 +12,11 @@
 
 #include "ros/ros.h"
 
-#include "geometry_msgs/Twist.h"
+#include "sensor_msgs/NavSatFix.h"
+#include "geometry_msgs/TwistStamped.h"
+#include "geometry_msgs/Vector3Stamped.h"
 #include "std_msgs/String.h"
+#include "geometry_msgs/Pose2D.h"
 
 using namespace std;
 
@@ -27,8 +30,8 @@ string msg;
 bool isSending;
 int port;
 
-double x[2], yaw, pitch, roll, vit, wifi_lvl;
-double u_yaw;
+double latitude, longitude, yaw, pitch, roll, vit, wifi_lvl;
+double u_yaw, u_throttle;
 
 // SIGACTION
 void signals_handler(int signal_number)
@@ -47,7 +50,7 @@ void send_to ()
 	char buffer[500];
 	while(ros::ok())
 	{
-		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), x[0], x[1], yaw, roll, pitch, 0.0, 100.0);
+		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, vit, 100.0);
 
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -55,7 +58,13 @@ void send_to ()
 			break;
 		}
 
-		printf("Sent : %s\n", buffer);
+		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(),  (u_throttle + u_yaw)*100, (u_throttle - u_yaw)*100);
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
 
 		ros::spinOnce();
         loop_rate.sleep();
@@ -153,14 +162,28 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 }
 */
 
-void gpsCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-    x[0] 	= msg->linear.x;
-    x[1] 	= msg->linear.y;
 
-    yaw 	= msg->angular.x;
-    roll 	= msg->angular.y;
-    pitch 	= msg->angular.z;
+
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+{
+    latitude 	= msg->latitude;
+    longitude 	= msg->longitude;
+}
+
+void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    u_throttle 	= msg->linear.x;
+    u_yaw 		= msg->angular.z;
+}
+
+void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+{
+    vit = msg->twist.linear.x;
+}
+
+void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
+{
+    yaw = msg->vector.z;
 }
 
 	// Main
@@ -186,12 +209,17 @@ int main(int argc, char *argv [])
     isSending = argv[2];
     port = atoi(argv[1]);
 
+    yaw = 0.0;
+
     cout << "Type of server : " << isSending << " | Port : " << port << endl;
 
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber status_sub = n.subscribe("data_boat", 1000, gpsCallback);
+	ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
+    ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
+    ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
+    ros::Subscriber cons_sub 	= n.subscribe("cons_boat", 1000, consCallback);
 
 
 	printf("Starting server\n");

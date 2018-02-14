@@ -76,7 +76,6 @@ int main(int argc, char** argv)
     u_yaw = 0;
     u_vitesse = 0;
 
-    double compt = ros::Time::now().toSec();
 
         // Ros init
 
@@ -84,6 +83,9 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
 
     ros::Rate loop_rate(25);
+
+    double compt = ros::Time::now().toSec();
+
 
         // Initials parameters
 
@@ -112,7 +114,6 @@ int main(int argc, char** argv)
         double det;
 
         computeDistance();
-        ROS_INFO("Dist to waypoint : %d\n", dist);
 
         if(isRadiale)
         {

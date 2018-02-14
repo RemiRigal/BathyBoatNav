@@ -1,6 +1,12 @@
 <launch>
+ 	<node name="joy_teleop" pkg="joy_teleop" type="joy_teleop.py">
+ 		<rosparam file="/opt/ros/kinetic/share/joy_teleop/config/joy_teleop_example.yaml" command="load"/>
+ 	</node>
 
-    <node name="key_teleop" pkg="key_teleop" type="key_teleop.py" output="screen"/>
+	<node respawn="true" pkg="joy" type="joy_node" name="joy" output="screen">
+		<param name="dev" type="string" value="/dev/input/js0" />
+		<param name="deadzone" value="0.12" />
+	</node>
 
     <node name="pololu" pkg="BathyBoatNav" type="pololu">
         <param name="Path" 			type="string" 	value="/dev/pololu"/>
