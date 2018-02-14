@@ -12,6 +12,7 @@
 
 #include "ros/ros.h"
 
+#include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/Pose2D.h"
@@ -162,12 +163,10 @@ void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
 
 
 
-void gpsCallback(const geometry_msgs::Pose2D::ConstPtr& msg)
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
-    longitude 	= msg->x;
-    latitude 	= msg->y;
-
-    yaw 	= msg->theta;
+    longitude 	= msg->latitude;
+    latitude 	= msg->longitude;
 }
 
 void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
@@ -200,12 +199,14 @@ int main(int argc, char *argv [])
     isSending = argv[2];
     port = atoi(argv[1]);
 
+    yaw = 0.0;
+
     cout << "Type of server : " << isSending << " | Port : " << port << endl;
 
 	// Subscribe msgs
     //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
 
-    ros::Subscriber data_sub = n.subscribe("gps_angle_boat", 1000, gpsCallback);
+    ros::Subscriber gps_sub = n.subscribe("nav", 1000, gpsCallback);
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
 
 
