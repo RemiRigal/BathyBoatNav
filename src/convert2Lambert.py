@@ -51,10 +51,12 @@ def convert():
 
 rospy.init_node('convert2Lambert') 
 
-input_GPS_msg 	= rospy.get_param('Input_GPS_msg', 'nav')
-input_yaw_msg 	= rospy.get_param('Input_yaw_msg', 'imu')
-output_msg 		= rospy.get_param('Output_msg', 'gps_angle_boat')
-input_mission_msg = rospy.get_param('Input_mission_msg', 'mission_gps')
+input_GPS_msg 		= rospy.get_param('Input_GPS_msg', 'nav')
+input_yaw_msg 		= rospy.get_param('Input_yaw_msg', 'imu')
+input_mission_msg 	= rospy.get_param('Input_mission_msg', 'mission_gps')
+
+
+output_msg 			= rospy.get_param('Output_msg', 'gps_angle_boat')
 
 sub = rospy.Subscriber(input_mission_msg, NavSatFix, missionCallback)
 sub = rospy.Subscriber(input_GPS_msg, NavSatFix, gpsCallback) 

@@ -6,7 +6,7 @@
 
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/NavSatFix.h"
-#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/Twist.h"
 #include "BathyBoatNav/next_goal.h"
 
 #include "tf/tf.h"
@@ -18,6 +18,7 @@ const double Pi = 3.14159265358979323846;
 
 double gis;
 
+double latitude_GPS_target, longitude_GPS_target;
 double latitude_target, longitude_target;
 bool isRadiale;
 int still_n_mission;
@@ -60,11 +61,14 @@ void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
 }
 */
 
-void callback(const geometry_msgs::Pose2D::ConstPtr& msg)
+void callback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    latitude_boat   = msg->x;
-    longitude_boat  = msg->y;
-    yaw_boat        = msg->theta;
+    latitude_boat       = msg->linear.x;
+    longitude_boat      = msg->linear.y;
+    yaw_boat            = msg->linear.z;
+
+    latitude_target     = msg->angular.x;
+    longitude_target    = msg->angular.y;
 }
 
 int main(int argc, char** argv)
@@ -105,6 +109,9 @@ int main(int argc, char** argv)
 
     ros::Publisher debug_pub = n.advertise<geometry_msgs::Twist>("debug_boat", 1000);
     geometry_msgs::Twist debug_msgs;
+    
+    ros::Publisher mission_pub = n.advertise<sensor_msgs::NavSatFix>("mission_gps", 1000);
+    sensor_msgs::NavSatFix mission_msgs;
 
         // New GPS client
 
@@ -116,8 +123,8 @@ int main(int argc, char** argv)
 		if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
             {
                 isRadiale           = next_goal_msg.response.isRadiale;
-                latitude_target     = next_goal_msg.response.latitude[0];
-                longitude_target    = next_goal_msg.response.longitude[0];
+                latitude_GPS_target     = next_goal_msg.response.latitude[0];
+                longitude_GPS_target    = next_goal_msg.response.longitude[0];
                 still_n_mission     = next_goal_msg.response.remainingMissions;
                 if(isRadiale)
                 {
@@ -137,6 +144,34 @@ int main(int argc, char** argv)
         double det;
 
         computeDistance();
+
+        mission_msgs.latitude = latitude_GPS_target;
+        mission_msgs.longitude = longitude_GPS_target;
+
+        mission_pub.publish(mission_msgs);
+
+        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
+        {
+            if (next_goal_client.call(next_goal_msg))
+            {
+                if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
+                {
+                    isRadiale           = next_goal_msg.response.isRadiale;
+                    latitude_GPS_target     = next_goal_msg.response.latitude[0];
+                    longitude_GPS_target    = next_goal_msg.response.longitude[0];
+                    still_n_mission     = next_goal_msg.response.remainingMissions;
+                    if(isRadiale)
+                    {
+                        yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                    }
+                } else {
+                    state = "IDLE";
+                }
+            } else{
+                ROS_ERROR("Failed to call service");
+            }
+            compt = ros::Time::now().toSec();
+        }
 
         if(isRadiale)
         {
@@ -169,38 +204,13 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
-        	debug_msgs.angular.z = 1;
+            debug_msgs.angular.z = 1;
         } else {
-        	debug_msgs.angular.z = 0;
+            debug_msgs.angular.z = 0;
         }
 
 
         debug_pub.publish(debug_msgs);
-
-
-        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
-        {
-            if (next_goal_client.call(next_goal_msg))
-            {
-                if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
-                {
-                    isRadiale           = next_goal_msg.response.isRadiale;
-                    latitude_target     = next_goal_msg.response.latitude[0];
-                    longitude_target    = next_goal_msg.response.longitude[0];
-                    still_n_mission     = next_goal_msg.response.remainingMissions;
-                    if(isRadiale)
-                    {
-                        yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
-                    }
-                } else {
-                    state = "IDLE";
-                }
-            } else{
-                ROS_ERROR("Failed to call service");
-            }
-            compt = ros::Time::now().toSec();
-        }
-        
         ros::spinOnce();
         loop_rate.sleep();
     }
