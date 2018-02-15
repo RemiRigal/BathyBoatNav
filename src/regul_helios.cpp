@@ -54,9 +54,9 @@ int main(int argc, char** argv)
     double e;
     double zone_morte;
     double full_left;
-    double det;
+    double det = 0.0;
     double k;
-    double dist_line;
+    double dist_line = 0.0;
 
     u_yaw = 0;
     u_vitesse = 0;
@@ -152,13 +152,13 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
-            gis     = atan2(y_target - y_boat, x_target - x_boat);
-            det     = sin(yaw_radiale - yaw_boat - gis) * dist;
-            gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
+            //gis     = atan2(y_target - y_boat, x_target - x_boat);
+            //det     = sin(yaw_radiale - yaw_boat - gis) * dist;
+            //gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
 
-            //det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
-            //dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
-            //gis         = yaw_radiale * tanh(dist_line);
+            det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
+            dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
+            gis         = yaw_radiale * tanh(dist_line);
         } else {
             gis     = atan2(x_target - x_boat, y_target - y_boat);
         }
@@ -174,17 +174,19 @@ int main(int argc, char** argv)
         }
 
         cons_msgs.angular.z = u_yaw;
-        cons_msgs.linear.x  = 0;
+        cons_msgs.linear.x  = 0.7;
+
         cons_pub.publish(cons_msgs);
 
-        debug_msgs.linear.x = x_target;
-        debug_msgs.linear.y = y_target;
-        debug_msgs.linear.z = dist;
+        debug_msgs.linear.x = dist;
+        debug_msgs.linear.y = det;
+        debug_msgs.linear.z = dist_line;
         debug_msgs.angular.x = gis;
         debug_msgs.angular.y = e;
         debug_msgs.angular.z = num_waypoints;
 
         debug_pub.publish(debug_msgs);
+
         ros::spinOnce();
         loop_rate.sleep();
     }
