@@ -91,8 +91,8 @@ int main(int argc, char *argv [])
 		right_mot_msgs.data = right_mot;
 		right_mot_pub.publish(right_mot_msgs);
 
-		maestroSetTarget(fd, 0, left_mot);
-		maestroSetTarget(fd, 1, right_mot);
+		maestroSetTarget(fd, 1, left_mot);
+		maestroSetTarget(fd, 0, right_mot);
 
 		ros::spinOnce();
 		loop_rate.sleep();

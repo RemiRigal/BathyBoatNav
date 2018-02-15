@@ -102,7 +102,7 @@ def sendPointService(req):
 if __name__ == "__main__":
 	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
 
-	name_mission_file = rospy.get_param('/name_mission', 'mission.json')
+	name_mission_file = rospy.get_param('/name_mission', 'mission_rad.json')
 
 	readFile()
 	s = rospy.Service('/next_goal', next_goal, sendPointService)
