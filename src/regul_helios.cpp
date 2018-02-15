@@ -18,7 +18,6 @@ const double Pi = 3.14159265358979323846;
 
 double gis;
 
-double latitude_GPS_target, longitude_GPS_target;
 double y_target, x_target;
 double y_old_target = 0;
 double x_old_target = 0;
@@ -126,8 +125,8 @@ int main(int argc, char** argv)
 		if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
             {
                 isRadiale           = next_goal_msg.response.isRadiale;
-                latitude_GPS_target     = next_goal_msg.response.latitude[0];
-                longitude_GPS_target    = next_goal_msg.response.longitude[0];
+                x_target     = next_goal_msg.response.latitude[0];
+                y_target    = next_goal_msg.response.longitude[0];
                 still_n_mission     = next_goal_msg.response.remainingMissions;
 		/*                
 		if(isRadiale)
@@ -155,8 +154,8 @@ int main(int argc, char** argv)
                 if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
                 {
                     isRadiale           = next_goal_msg.response.isRadiale;
-                    latitude_GPS_target     = next_goal_msg.response.latitude[0];
-                    longitude_GPS_target    = next_goal_msg.response.longitude[0];
+                    x_target     = next_goal_msg.response.latitude[0];
+                    y_target    = next_goal_msg.response.longitude[0];
                     still_n_mission     = next_goal_msg.response.remainingMissions;
                     if(isRadiale)
                     {
