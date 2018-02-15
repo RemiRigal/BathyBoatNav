@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "geometry_msgs/Twist.h"
+#include "std_msgs/Int64.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
@@ -69,6 +70,15 @@ int main(int argc, char *argv [])
 
 	ros::Subscriber cons_sub = n.subscribe(channel, 1000, chatCallback);
 
+		// Publisher
+
+	ros::Publisher left_mot_pub = n.advertise<std_msgs::Int64>("left_mot", 1000);
+    std_msgs::Int64 left_mot_msgs;
+
+	ros::Publisher right_mot_pub = n.advertise<std_msgs::Int64>("right_mot", 1000);
+    std_msgs::Int64 right_mot_msgs;
+
+
 	while(ros::ok())
 	{
 		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
@@ -79,6 +89,12 @@ int main(int argc, char *argv [])
 	
 		maestroSetTarget(fd, 0, left_mot);
 		maestroSetTarget(fd, 1, right_mot);
+
+		left_mot_msgs.data = left_mot;
+		left_mot_pub.publish(left_mot_msgs);
+
+		right_mot_msgs.data = right_mot;
+		right_mot_pub.publish(right_mot_msgs);
 
 		ros::spinOnce();
 		loop_rate.sleep();
