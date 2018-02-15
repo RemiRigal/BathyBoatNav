@@ -152,13 +152,13 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
-            //gis     = atan2(y_target - y_boat, x_target - x_boat);
-            //det     = sin(yaw_radiale - yaw_boat - gis) * dist;
-            //gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
+            gis     = atan2(y_target - y_boat, x_target - x_boat);
+            det     = sin(yaw_radiale - yaw_boat - gis) * dist;
+            gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
 
-            det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
-            dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
-            gis         = yaw_radiale * tanh(dist_line);
+            //det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
+            //dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
+            //gis         = yaw_radiale * tanh(dist_line);
         } else {
             gis     = atan2(x_target - x_boat, y_target - y_boat);
         }
