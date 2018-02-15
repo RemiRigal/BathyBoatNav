@@ -7,9 +7,6 @@
 -->
     <node name="convertLambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen"/>
     
-    <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
-        <param name="Name_boat" type="string" value="boat"/>
-    </node>
 
     <!-- Args server : Port (int) | Sender (boolean) true is send false if read -->
     
@@ -20,6 +17,10 @@
         <param name="Path"          type="string"   value="/dev/pololu"/>
         <param name="Cons_channel"  type="string"   value="cons_boat"/>
         <param name="Turn_gap"      type="int"      value="100"/>
+    </node>
+    
+    <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
+        <param name="Name_boat" type="string" value="boat"/>
     </node>
 
     <node name="rosbag_record_diag" pkg="rosbag" type="record" 

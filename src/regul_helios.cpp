@@ -141,7 +141,7 @@ if(next_goal_client.call(next_goal_msg))
         } else if (e > 2.5 || e < -2.5) {
             u_yaw = 0.8;
         } else {
-            u_yaw = atan(e)/3.0;
+            u_yaw = k*atan(e);
         }
 
         cons_msgs.angular.z = u_yaw;
