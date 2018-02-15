@@ -6,6 +6,7 @@ import pyproj
 
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3Stamped
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Imu
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
@@ -31,10 +32,9 @@ def missionCallback(msg):
 
 
 def angleCallback(msg):
-	global roll, pitch, yaw
+	global yaw
 	
-	orientation_list = [msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.orientation.w];
-	(roll, pitch, yaw) = euler_from_quaternion (orientation_list)
+	yaw = msg.vector.z
 
 def convert():
 	global latitude, longitude, longitude_mission, latitude_mission
@@ -52,7 +52,7 @@ def convert():
 rospy.init_node('convert2Lambert') 
 
 input_GPS_msg 		= rospy.get_param('Input_GPS_msg', 'nav')
-input_yaw_msg 		= rospy.get_param('Input_yaw_msg', 'imu')
+input_yaw_msg 		= rospy.get_param('Input_yaw_msg', 'imu_attitude')
 input_mission_msg 	= rospy.get_param('Input_mission_msg', 'mission_gps')
 
 
@@ -60,12 +60,12 @@ output_msg 			= rospy.get_param('Output_msg', 'gps_angle_boat')
 
 sub = rospy.Subscriber(input_mission_msg, NavSatFix, missionCallback)
 sub = rospy.Subscriber(input_GPS_msg, NavSatFix, gpsCallback) 
-sub = rospy.Subscriber(input_yaw_msg, Imu, angleCallback) 
+sub = rospy.Subscriber(input_yaw_msg, Vector3Stamped, angleCallback) 
 pub = rospy.Publisher(output_msg, Twist, queue_size=10)
 
 rate = rospy.Rate(25) 
 
-pose = Pose2D()
+pose = Twist()
 
 while not rospy.is_shutdown(): 
 

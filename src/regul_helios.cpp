@@ -19,11 +19,11 @@ const double Pi = 3.14159265358979323846;
 double gis;
 
 double latitude_GPS_target, longitude_GPS_target;
-double latitude_target, longitude_target;
+double y_target, x_target;
 bool isRadiale;
 int still_n_mission;
 
-double latitude_boat, longitude_boat;
+double x_boat, y_boat;
 double roll, pitch, yaw_boat, yaw_radiale;
 
 double dist_max;
@@ -38,7 +38,7 @@ string state;
 
 void computeDistance()
 {
-    dist = pow(pow(latitude_target - latitude_boat,2) + pow(longitude_target - longitude_boat,2), 0.5);
+    dist = pow(pow(x_target - x_boat,2) + pow(y_target - y_boat,2), 0.5);
 }
 
 /*
@@ -63,12 +63,12 @@ void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
 
 void callback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    latitude_boat       = msg->linear.x;
-    longitude_boat      = msg->linear.y;
+    x_boat       = msg->linear.x;
+    y_boat      = msg->linear.y;
     yaw_boat            = msg->linear.z;
 
-    latitude_target     = msg->angular.x;
-    longitude_target    = msg->angular.y;
+    x_target     = msg->angular.x;
+    y_target    = msg->angular.y;
 }
 
 int main(int argc, char** argv)
@@ -126,10 +126,12 @@ int main(int argc, char** argv)
                 latitude_GPS_target     = next_goal_msg.response.latitude[0];
                 longitude_GPS_target    = next_goal_msg.response.longitude[0];
                 still_n_mission     = next_goal_msg.response.remainingMissions;
-                if(isRadiale)
+		/*                
+		if(isRadiale)
                 {
-                    yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                    yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], e_target - next_goal_msg.response.latitude[1]);
                 }
+		*/
             } else {
                 state = "IDLE";
             }
@@ -160,10 +162,10 @@ int main(int argc, char** argv)
                     latitude_GPS_target     = next_goal_msg.response.latitude[0];
                     longitude_GPS_target    = next_goal_msg.response.longitude[0];
                     still_n_mission     = next_goal_msg.response.remainingMissions;
-                    if(isRadiale)
-                    {
-                        yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
-                    }
+                    //if(isRadiale)
+                    //{
+                    //    yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                    //}
                 } else {
                     state = "IDLE";
                 }
@@ -175,14 +177,14 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
-            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
+            gis     = atan2(y_target - y_boat, x_target - x_boat);
             det     = sin(yaw_radiale - yaw_boat - gis) * dist;
             gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat;  
         } else {
-            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
+            gis     = atan2(y_target - y_boat, x_target - x_boat);
         }
 
-        e   = 2*atan(tan(gis/2));
+        e   = 2*atan(tan((gis-yaw_boat)/2));
         if(e < 0.0005 && e > -0.0005)
         {
             u_yaw = 0.0;
@@ -196,11 +198,12 @@ int main(int argc, char** argv)
         cons_msgs.linear.x  = 0;
         cons_pub.publish(cons_msgs);
 
-        debug_msgs.linear.x = latitude_target;
-        debug_msgs.linear.y = longitude_target;
+        debug_msgs.linear.x = x_target;
+        debug_msgs.linear.y = y_target;
         debug_msgs.linear.z = dist;
         debug_msgs.angular.x = gis;
         debug_msgs.angular.y = e;
+	debug_msgs.angular.z = yaw_boat;
 
         if(isRadiale)
         {
