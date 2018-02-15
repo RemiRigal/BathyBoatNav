@@ -9,7 +9,7 @@ import sys
 from functools import partial
 import pyproj
 
-global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
+global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent, name_mission_file
 latitudes = defaultdict(list)
 longitudes = defaultdict(list)
 missions = defaultdict(list)
@@ -28,7 +28,10 @@ def convert(latitude, longitude):
 	return x_lambert, y_lambert
 
 def readFile():
-	path = "/home/guerledan4/BathyBoatMissions/mission.json"
+	global name_mission_file
+
+	path = "/home/guerledan4/BathyBoatMissions/" + name_mission_file
+	print(path)
 	if os.path.isfile(path):
 		with open(path, "r") as jsonFile:
 			jsonDict = json.loads(jsonFile.read())
@@ -98,6 +101,9 @@ def sendPointService(req):
 
 if __name__ == "__main__":
 	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
+
+	name_mission_file = rospy.get_param('/name_mission', 'mission.json')
+
 	readFile()
 	s = rospy.Service('/next_goal', next_goal, sendPointService)
 	rospy.spin()
