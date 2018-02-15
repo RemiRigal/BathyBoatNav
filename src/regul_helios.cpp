@@ -20,6 +20,8 @@ double gis;
 
 double latitude_GPS_target, longitude_GPS_target;
 double y_target, x_target;
+double y_old_target = 0;
+double x_old_target = 0;
 bool isRadiale;
 int still_n_mission;
 
@@ -63,17 +65,19 @@ void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
 
 void callback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    x_boat       = msg->linear.x;
-    y_boat      = msg->linear.y;
-    yaw_boat            = msg->linear.z;
-
-    x_target     = msg->angular.x;
-    y_target    = msg->angular.y;
+    x_boat = msg->linear.x;
+    y_boat = msg->linear.y;
+    yaw_boat = msg->linear.z;
 }
 
 int main(int argc, char** argv)
 {
+    int num_waypoints = 0;
     double e;
+    double zone_morte;
+    double full_left;
+    double det;
+    bool computedCoord = true;
 
     u_yaw = 0;
     u_vitesse = 0;
@@ -95,6 +99,8 @@ int main(int argc, char** argv)
     n.param<string>("Name_boat", name, "helios");
     n.param<double>("Accept_gap", dist_max, 3.0);
     n.param<double>("Coeff", k, 0.5);
+    n.param<double>("Zone_morte", zone_morte, 0.05);
+    n.param<double>("Full_left", full_left, 2.5);
         // Info boat
 /*
     ros::Subscriber gps_sub     = n.subscribe("nav",   1000, gpsCallback);
@@ -109,9 +115,6 @@ int main(int argc, char** argv)
 
     ros::Publisher debug_pub = n.advertise<geometry_msgs::Twist>("debug_boat", 1000);
     geometry_msgs::Twist debug_msgs;
-    
-    ros::Publisher mission_pub = n.advertise<sensor_msgs::NavSatFix>("mission_gps", 1000);
-    sensor_msgs::NavSatFix mission_msgs;
 
         // New GPS client
 
@@ -143,16 +146,9 @@ int main(int argc, char** argv)
     
     while(ros::ok())
     {
-        double det;
-
         computeDistance();
 
-        mission_msgs.latitude = latitude_GPS_target;
-        mission_msgs.longitude = longitude_GPS_target;
-
-        mission_pub.publish(mission_msgs);
-
-        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
+        if(dist < dist_max && computedCoord)
         {
             if (next_goal_client.call(next_goal_msg))
             {
@@ -162,13 +158,15 @@ int main(int argc, char** argv)
                     latitude_GPS_target     = next_goal_msg.response.latitude[0];
                     longitude_GPS_target    = next_goal_msg.response.longitude[0];
                     still_n_mission     = next_goal_msg.response.remainingMissions;
-                    //if(isRadiale)
-                    //{
-                    //    yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
-                    //}
+                    if(isRadiale)
+                    {
+
+                    }
+                    computedCoord = false;
                 } else {
                     state = "IDLE";
                 }
+                num_waypoints ++;
             } else{
                 ROS_ERROR("Failed to call service");
             }
@@ -177,6 +175,7 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
+            //yaw_radiale = atan2(y_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
             gis     = atan2(y_target - y_boat, x_target - x_boat);
             det     = sin(yaw_radiale - yaw_boat - gis) * dist;
             gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat;  
@@ -185,10 +184,10 @@ int main(int argc, char** argv)
         }
 
         e   = 2*atan(tan((gis-yaw_boat)/2));
-        if(e < 0.0005 && e > -0.0005)
+        if(fabs(e) < zone_morte)
         {
             u_yaw = 0.0;
-        } else if (e > 2.5 || e < -2.5) {
+        } else if (fabs(e) > full_left) {
             u_yaw = 0.8;
         } else {
             u_yaw = k*atan(e);

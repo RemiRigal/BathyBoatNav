@@ -23,13 +23,6 @@ def gpsCallback(msg):
 
 	latitude   = msg.latitude
 	longitude  = msg.longitude
-	
-def missionCallback(msg):
-	global latitude_mission, longitude_mission
-
-	latitude_mission   = msg.latitude
-	longitude_mission  = msg.longitude
-
 
 def angleCallback(msg):
 	global yaw
@@ -53,7 +46,6 @@ rospy.init_node('convert2Lambert')
 
 input_GPS_msg 		= rospy.get_param('Input_GPS_msg', 'nav')
 input_yaw_msg 		= rospy.get_param('Input_yaw_msg', 'imu_attitude')
-input_mission_msg 	= rospy.get_param('Input_mission_msg', 'mission_gps')
 
 
 output_msg 			= rospy.get_param('Output_msg', 'gps_angle_boat')
@@ -71,7 +63,7 @@ while not rospy.is_shutdown():
 
 	x_lambert, y_lambert, x_mission_lambert, y_mission_lambert = convert()
 
-	pose = Twist(Vector3(x_lambert, y_lambert, yaw), Vector3(x_mission_lambert, y_mission_lambert, 0))
+	pose = Twist(Vector3(x_lambert, y_lambert, yaw), Vector3(0, 0, 0))
 
 	pub.publish(pose) 
 

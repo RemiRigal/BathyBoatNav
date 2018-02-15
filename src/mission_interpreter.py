@@ -6,6 +6,8 @@ import rospy
 import json
 import os.path
 import sys
+from functools import partial
+import pyproj
 
 global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
 latitudes = defaultdict(list)
@@ -13,6 +15,17 @@ longitudes = defaultdict(list)
 missions = defaultdict(list)
 nbrMissions = 0
 nbrMissionsSent = 0
+
+def convert(latitude, longitude):
+
+	PROJECT = partial(
+	pyproj.transform,
+	pyproj.Proj(init='epsg:4326'),
+	pyproj.Proj(init='epsg:2154'))
+
+	x_lambert, y_lambert = PROJECT(longitude, latitude)
+
+	return x_lambert, y_lambert
 
 def readFile():
 	path = "/home/guerledan4/BathyBoatMissions/mission.json"
@@ -27,18 +40,22 @@ def readFile():
 						missions[nbrMissions] = False;
 						for j in i['waypoints'] :
 							if all (k in j.keys() for k in ('lat', 'lng')):
-								latitudes[nbrMissions].append(j['lat'])
-								longitudes[nbrMissions].append(j['lng'])
+								x, y = convert(j['lat'], j['lng'])
+								latitudes[nbrMissions].append(x)
+								longitudes[nbrMissions].append(y)
 							else:
 								badJson = True
 					elif all (k in i.keys() for k in ('radiales', 'type')) and i['type'] == "Radiales" :
 						missions[nbrMissions] = True;
 						for j in i['radiales'] :
 							if all (k in j.keys() for k in ('start', 'end')):
-								latitudes[nbrMissions].append(j["start"]['lat'])
-								latitudes[nbrMissions].append(j["end"]['lat'])
-								longitudes[nbrMissions].append(j["start"]['lng'])
-								longitudes[nbrMissions].append(j["end"]['lng'])	
+								start_x, start_y = convert(j["start"]['lat'], j["start"]['lng'])
+								end_x, end_y = convert(j["end"]['lat'], j["end"]['lng'])
+
+								latitudes[nbrMissions].append(start_x)
+								latitudes[nbrMissions].append(end_x)
+								longitudes[nbrMissions].append(start_y)
+								longitudes[nbrMissions].append(end_y)	
 							else:
 								badJson = True			
 					else:

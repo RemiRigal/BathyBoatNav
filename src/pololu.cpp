@@ -71,8 +71,8 @@ int main(int argc, char *argv [])
 
 	while(ros::ok())
 	{
-		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
-		right_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
+		left_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
+		right_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
 
 		ROS_INFO("Consignes 	= (%lf, %lf)\n", u_throttle, u_yaw);
 		ROS_INFO("Cons_pololu	= (%lf, %lf)\n", left_mot, right_mot);
