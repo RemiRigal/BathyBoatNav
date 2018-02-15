@@ -108,8 +108,16 @@ int main(int argc, char** argv)
 
         // New GPS client
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
+
+if(next_goal_client.call(next_goal_msg))
+{
+	ROS_WARN("Init call success");
+} else {
+	ROS_WARN("Init call failed");
+}
+
     
     while(ros::ok())
     {

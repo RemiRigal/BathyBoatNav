@@ -2,9 +2,9 @@
 
 
     <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
-
+<!--
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
-
+-->
     <node name="convertLambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen"/>
     
     <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
