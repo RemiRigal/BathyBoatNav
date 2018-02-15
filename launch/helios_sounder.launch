@@ -1,10 +1,10 @@
 <launch>
-<!--
-    <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
 
+    <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
+    <include file="$(find sounder)/launch/sounder.launch"/>
+<!--
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 -->
-
     <node name="convertLambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen"/>
     
 
@@ -16,15 +16,15 @@
     <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
         <param name="Path"          type="string"   value="/dev/pololu"/>
         <param name="Cons_channel"  type="string"   value="cons_boat"/>
-        <param name="Turn_gap"      type="int"      value="1000"/>
+        <param name="Turn_gap"      type="int"      value="2000"/>
     </node>
     
     <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
         <param name="Name_boat" type="string" value="helios"/>
-        <param name="Accept_gap" type="double" value="10.0"/>
-        <param name="Coeff" type="double" value="2.0"/>
-        <param name="Zone_morte" type="double" value="0.05"/>
-        <param name="Full_left" type="double" value="2.5"/>
+	<param name="Full_left" type="double" value="2.5"/>
+	<param name="Zone_morte" type="double" value="0.05"/>
+	<param name="Coeff" type="double" value="2.0"/>
+	<param name="Accept_gap" type="double" value="10.0"/>
     </node>
 
     <node name="rosbag_record_diag" pkg="rosbag" type="record" 

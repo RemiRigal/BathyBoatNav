@@ -17,7 +17,7 @@ double u_throttle, u_yaw;
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    u_throttle 	= msg->linear.x;
+    u_throttle 	= 0.7;
     u_yaw 		= msg->angular.z;
 }
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv [])
         // Initials parameters
     
 	n.param<string>("Path", path, "/dev/pololu_servo_serial");
-	n.param<string>("Cons_channel", channel, "/key_vel");
+	n.param<string>("Cons_channel", channel, "cons_boat");
 	n.param<int>("Turn_gap", gap, 500);
 
     	// Connection to Maestro
@@ -81,20 +81,18 @@ int main(int argc, char *argv [])
 
 	while(ros::ok())
 	{
+
 		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
 		right_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
-
-		ROS_INFO("Consignes 	= (%lf, %lf)\n", u_throttle, u_yaw);
-		ROS_INFO("Cons_pololu	= (%lf, %lf)\n", left_mot, right_mot);
-	
-		maestroSetTarget(fd, 0, left_mot);
-		maestroSetTarget(fd, 1, right_mot);
 
 		left_mot_msgs.data = left_mot;
 		left_mot_pub.publish(left_mot_msgs);
 
 		right_mot_msgs.data = right_mot;
 		right_mot_pub.publish(right_mot_msgs);
+
+		maestroSetTarget(fd, 0, left_mot);
+		maestroSetTarget(fd, 1, right_mot);
 
 		ros::spinOnce();
 		loop_rate.sleep();

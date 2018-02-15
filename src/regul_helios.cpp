@@ -71,12 +71,11 @@ void callback(const geometry_msgs::Twist::ConstPtr& msg)
 
 int main(int argc, char** argv)
 {
-    int num_waypoints = 0;
+    int num_waypoints = 1;
     double e;
     double zone_morte;
     double full_left;
     double det;
-    bool computedCoord = true;
 
     u_yaw = 0;
     u_vitesse = 0;
@@ -96,7 +95,7 @@ int main(int argc, char** argv)
 	        // Initials parameters
 
     n.param<string>("Name_boat", name, "helios");
-    n.param<double>("Accept_gap", dist_max, 3.0);
+    n.param<double>("Accept_gap", dist_max, 10.0);
     n.param<double>("Coeff", k, 0.5);
     n.param<double>("Zone_morte", zone_morte, 0.05);
     n.param<double>("Full_left", full_left, 2.5);
@@ -147,7 +146,7 @@ int main(int argc, char** argv)
     {
         computeDistance();
 
-        if(dist < dist_max && computedCoord)
+        if(dist < dist_max)
         {
             if (next_goal_client.call(next_goal_msg))
             {
@@ -161,7 +160,6 @@ int main(int argc, char** argv)
                     {
 
                     }
-                    computedCoord = false;
                 } else {
                     state = "IDLE";
                 }
@@ -179,17 +177,17 @@ int main(int argc, char** argv)
             det     = sin(yaw_radiale - yaw_boat - gis) * dist;
             gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat;  
         } else {
-            gis     = atan2(y_target - y_boat, x_target - x_boat);
+            gis     = atan2(x_target - x_boat, y_target - y_boat);
         }
 
-        e   = 2*atan(tan((gis-yaw_boat)/2));
-        if(fabs(e) < zone_morte)
+        e   = 2.0*atan(tan((gis - yaw_boat)/2.0));
+        if(abs(e) < zone_morte)
         {
             u_yaw = 0.0;
-        } else if (fabs(e) > full_left) {
+        } else if (abs(e) > full_left) {
             u_yaw = 0.8;
         } else {
-            u_yaw = k*atan(e);
+            u_yaw = k*e;
         }
 
         cons_msgs.angular.z = u_yaw;
@@ -201,15 +199,7 @@ int main(int argc, char** argv)
         debug_msgs.linear.z = dist;
         debug_msgs.angular.x = gis;
         debug_msgs.angular.y = e;
-	debug_msgs.angular.z = yaw_boat;
-
-        if(isRadiale)
-        {
-            debug_msgs.angular.z = 1;
-        } else {
-            debug_msgs.angular.z = 0;
-        }
-
+	debug_msgs.angular.z = num_waypoints;
 
         debug_pub.publish(debug_msgs);
         ros::spinOnce();

@@ -11,6 +11,6 @@
     </node>
 
  	<node name="rosbag_record_diag" pkg="rosbag" type="record" 
- 			args="record -o /home/lallemfa/bags/teleop -a"/>
+ 			args="record -o /home/guerledan4/bags/teleop -a"/>
 
 </launch>
