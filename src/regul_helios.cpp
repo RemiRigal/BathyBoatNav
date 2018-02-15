@@ -16,7 +16,7 @@ using namespace std;
 
 const double Pi = 3.14159265358979323846;
 
-double gis;
+double yaw_bar;
 
 double y_target, x_target;
 double y_target_start_line, x_target_start_line;
@@ -152,18 +152,18 @@ int main(int argc, char** argv)
 
         if(isRadiale)
         {
-            //gis     = atan2(y_target - y_boat, x_target - x_boat);
-            //det     = sin(yaw_radiale - yaw_boat - gis) * dist;
-            //gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
+            //yaw_bar     = atan2(y_target - y_boat, x_target - x_boat);
+            //det     = sin(yaw_radiale - yaw_boat - yaw_bar) * dist;
+            //yaw_bar     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
 
             det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
             dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
-            gis         = yaw_radiale * tanh(dist_line);
+            yaw_bar     = yaw_radiale * tanh(dist_line);
         } else {
-            gis     = atan2(x_target - x_boat, y_target - y_boat);
+            yaw_bar     = atan2(x_target - x_boat, y_target - y_boat);
         }
 
-        e   = 2.0*atan(tan((gis - yaw_boat)/2.0));
+        e   = 2.0*atan(tan((yaw_bar - yaw_boat)/2.0));
         if(abs(e) < zone_morte)
         {
             u_yaw = 0.0;
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
         debug_msgs.linear.x = dist;
         debug_msgs.linear.y = det;
         debug_msgs.linear.z = dist_line;
-        debug_msgs.angular.x = gis;
+        debug_msgs.angular.x = yaw_bar;
         debug_msgs.angular.y = e;
         debug_msgs.angular.z = num_waypoints;
 
