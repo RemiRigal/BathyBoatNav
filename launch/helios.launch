@@ -12,13 +12,13 @@
     
     <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
     <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 false" output="screen" />
-
+<!--
     <node name="pololu" pkg="BathyBoatNav" type="pololu">
         <param name="Path"          type="string"   value="/dev/pololu"/>
         <param name="Cons_channel"  type="string"   value="cons_boat"/>
         <param name="Turn_gap"      type="int"      value="100"/>
     </node>
-    
+-->    
     <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
         <param name="Name_boat" type="string" value="boat"/>
     </node>

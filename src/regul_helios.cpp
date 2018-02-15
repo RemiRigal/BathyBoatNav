@@ -73,8 +73,8 @@ int main(int argc, char** argv)
 
     u_yaw = 0;
     u_vitesse = 0;
-	
-    bool init = false;
+
+    double k;
 
         // Ros init
 
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 
     n.param<string>("Name_boat", name, "helios");
     n.param<double>("Accept_gap", dist_max, 3.0);
-
+    n.param<double>("Coeff", k, 0.5);
         // Info boat
 /*
     ros::Subscriber gps_sub     = n.subscribe("nav",   1000, gpsCallback);
@@ -111,12 +111,25 @@ int main(int argc, char** argv)
     ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
 
-if(next_goal_client.call(next_goal_msg))
-{
-	ROS_WARN("Init call success");
-} else {
-	ROS_WARN("Init call failed");
-}
+	if(next_goal_client.call(next_goal_msg))
+	{                
+		if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
+            {
+                isRadiale           = next_goal_msg.response.isRadiale;
+                latitude_target     = next_goal_msg.response.latitude[0];
+                longitude_target    = next_goal_msg.response.longitude[0];
+                still_n_mission     = next_goal_msg.response.remainingMissions;
+                if(isRadiale)
+                {
+                    yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                }
+            } else {
+                state = "IDLE";
+            }
+		ROS_WARN("Init call success");
+	} else {
+		ROS_WARN("Init call failed");
+	}
 
     
     while(ros::ok())
@@ -165,7 +178,7 @@ if(next_goal_client.call(next_goal_msg))
         debug_pub.publish(debug_msgs);
 
 
-        if((dist < dist_max && ros::Time::now().toSec()-compt > 2.0) || init != true)
+        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
         {
             if (next_goal_client.call(next_goal_msg))
             {
@@ -182,7 +195,6 @@ if(next_goal_client.call(next_goal_msg))
                 } else {
                     state = "IDLE";
                 }
-                init = true;
             } else{
                 ROS_ERROR("Failed to call service");
             }
