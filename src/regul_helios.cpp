@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 
             det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
             dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
-            yaw_bar     = yaw_radiale * tanh(dist_line);
+            yaw_bar     = yaw_radiale + 0.4 * tanh(dist_line);
         } else {
             yaw_bar     = atan2(x_target - x_boat, y_target - y_boat);
         }
@@ -178,8 +178,8 @@ int main(int argc, char** argv)
 
         cons_pub.publish(cons_msgs);
 
-        debug_msgs.linear.x = dist;
-        debug_msgs.linear.y = det;
+        debug_msgs.linear.x = isRadiale;
+        debug_msgs.linear.y = yaw_radiale;
         debug_msgs.linear.z = dist_line;
         debug_msgs.angular.x = yaw_bar;
         debug_msgs.angular.y = e;

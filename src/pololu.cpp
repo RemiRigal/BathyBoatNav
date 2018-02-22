@@ -17,7 +17,7 @@ double u_throttle, u_yaw;
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    u_throttle 	= 0.7;
+    u_throttle 	= 1.0;
     u_yaw 		= msg->angular.z;
 }
 
