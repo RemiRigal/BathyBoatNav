@@ -69,6 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   next_goal.srv
+  changeState.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -158,6 +159,8 @@ add_executable(simu_helios 	      src/simu_helios.cpp)
 
 add_executable(target   src/target.cpp)
 
+add_executable(fsm src/fsm.cpp)
+
 #add_executable(mission_interpreter src/mission_interpreter.cpp)
 
 ## The above recommended prefix causes long target names, the following renames the
@@ -203,7 +206,9 @@ target_link_libraries(target
   ${catkin_LIBRARIES}
 )
 
-
+target_link_libraries(fsm
+  ${catkin_LIBRARIES}
+)
 #target_link_libraries(mission_interpreter
 #  ${catkin_LIBRARIES}
 #)
