@@ -1,10 +1,12 @@
 <launch>
 
     <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
+    <include file="$(find sounder)/launch/sounder.launch"/>
 <!--
+    <include file="$(find monitor)/launch/monitor.launch"/>
+
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 -->
-
     <node name="convertLambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen"/>
     
 
@@ -21,10 +23,10 @@
     
     <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
         <param name="Name_boat" type="string" value="helios"/>
-        <param name="Accept_gap" type="double" value="10.0"/>
-        <param name="Coeff" type="double" value="2.0"/>
-        <param name="Zone_morte" type="double" value="0.05"/>
-        <param name="Full_left" type="double" value="2.5"/>
+	<param name="Full_left" type="double" value="2.5"/>
+	<param name="Zone_morte" type="double" value="0.05"/>
+	<param name="Coeff" type="double" value="2.0"/>
+	<param name="Accept_gap" type="double" value="5.0"/>
     </node>
 
     <node name="rosbag_record_diag" pkg="rosbag" type="record" 

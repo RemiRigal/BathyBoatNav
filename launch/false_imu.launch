@@ -1,7 +1,7 @@
 <launch>
-
-    <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
 <!--
+    <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
+
     <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
 -->
 

@@ -69,6 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   next_goal.srv
+  gps_conversion.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -157,6 +158,7 @@ add_executable(regul_helios_simu  src/regul_helios_simu.cpp)
 add_executable(simu_helios 	      src/simu_helios.cpp)
 
 add_executable(target   src/target.cpp)
+add_executable(gps_converter   src/gps_converter.cpp)
 
 #add_executable(mission_interpreter src/mission_interpreter.cpp)
 
@@ -203,6 +205,10 @@ target_link_libraries(target
   ${catkin_LIBRARIES}
 )
 
+target_link_libraries(gps_converter
+  proj
+  ${catkin_LIBRARIES}
+)
 
 #target_link_libraries(mission_interpreter
 #  ${catkin_LIBRARIES}

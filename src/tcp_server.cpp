@@ -16,6 +16,7 @@
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Int64.h"
 #include "geometry_msgs/Pose2D.h"
 
 using namespace std;
@@ -32,6 +33,8 @@ int port;
 
 double latitude, longitude, yaw, pitch, roll, vit, wifi_lvl;
 double u_yaw, u_throttle;
+
+double left_mot, right_mot;
 
 // SIGACTION
 void signals_handler(int signal_number)
@@ -58,7 +61,7 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(),  (u_throttle + u_yaw)*100, (u_throttle - u_yaw)*100);
+		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(),  left_mot, right_mot);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -186,6 +189,16 @@ void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
     yaw = msg->vector.z;
 }
 
+void leftCallback(const std_msgs::Int64::ConstPtr& msg)
+{
+    left_mot = msg->data;
+}
+
+void rightCallback(const std_msgs::Int64::ConstPtr& msg)
+{
+    right_mot = msg->data;
+}
+
 	// Main
 
 int main(int argc, char *argv [])
@@ -219,7 +232,8 @@ int main(int argc, char *argv [])
 	ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
     ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
     ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
-    ros::Subscriber cons_sub 	= n.subscribe("cons_boat", 1000, consCallback);
+    ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
+    ros::Subscriber right_sub 	= n.subscribe("right_mot", 1000, rightCallback);
 
 
 	printf("Starting server\n");

@@ -6,7 +6,7 @@
 
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/NavSatFix.h"
-#include "geometry_msgs/Pose2D.h"
+#include "geometry_msgs/Twist.h"
 #include "BathyBoatNav/next_goal.h"
 
 #include "tf/tf.h"
@@ -16,13 +16,14 @@ using namespace std;
 
 const double Pi = 3.14159265358979323846;
 
-double gis;
+double yaw_bar;
 
-double latitude_target, longitude_target;
+double y_target, x_target;
+double y_target_start_line, x_target_start_line;
 bool isRadiale;
 int still_n_mission;
 
-double latitude_boat, longitude_boat;
+double x_boat, y_boat;
 double roll, pitch, yaw_boat, yaw_radiale;
 
 double dist_max;
@@ -35,47 +36,30 @@ double dist;
 string name;
 string state;
 
-bool computeDistance()
+void computeDistance()
 {
-    dist = pow(pow(latitude_target - latitude_boat,2) + pow(longitude_target - longitude_boat,2), 0.5);
-    
-    return dist;
+    dist = pow(pow(x_target - x_boat,2) + pow(y_target - y_boat,2), 0.5);
 }
 
-/*
-void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+void callback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    latitude_boat   = msg->latitude;
-    longitude_boat  = msg->longitude;
-}
-
-void angleCallback(const sensor_msgs::Imu::ConstPtr& msg)
-{
-    tf::Quaternion q_boat;
-
-    q_boat.setX(msg->orientation.x);
-    q_boat.setY(msg->orientation.y);
-    q_boat.setZ(msg->orientation.z);
-    q_boat.setW(msg->orientation.w);
-
-    tf::Matrix3x3(q_boat).getRPY(roll, pitch, yaw_boat);
-}
-*/
-
-void callback(const geometry_msgs::Pose2D::ConstPtr& msg)
-{
-    latitude_boat   = msg->x;
-    longitude_boat  = msg->y;
-    yaw_boat        = msg->theta;
+    x_boat = msg->linear.x;
+    y_boat = msg->linear.y;
+    yaw_boat = msg->linear.z;
 }
 
 int main(int argc, char** argv)
 {
+    int num_waypoints = 1;
     double e;
+    double zone_morte;
+    double full_left;
+    double det = 0.0;
+    double k;
+    double dist_line = 0.0;
 
     u_yaw = 0;
     u_vitesse = 0;
-
 
         // Ros init
 
@@ -84,14 +68,13 @@ int main(int argc, char** argv)
 
     ros::Rate loop_rate(25);
 
-    double compt = ros::Time::now().toSec();
-
-
-        // Initials parameters
+	        // Initials parameters
 
     n.param<string>("Name_boat", name, "helios");
-    n.param<double>("Accept_gap", dist_max, 3.0);
-
+    n.param<double>("Accept_gap", dist_max, 10.0);
+    n.param<double>("Coeff", k, 0.5);
+    n.param<double>("Zone_morte", zone_morte, 0.05);
+    n.param<double>("Full_left", full_left, 2.5);
         // Info boat
 /*
     ros::Subscriber gps_sub     = n.subscribe("nav",   1000, gpsCallback);
@@ -103,65 +86,107 @@ int main(int argc, char** argv)
 
     ros::Publisher cons_pub = n.advertise<geometry_msgs::Twist>("cons_boat", 1000);
     geometry_msgs::Twist cons_msgs;
-    
+
+    ros::Publisher debug_pub = n.advertise<geometry_msgs::Twist>("debug_boat", 1000);
+    geometry_msgs::Twist debug_msgs;
+
         // New GPS client
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
+
+	if(next_goal_client.call(next_goal_msg))
+	{                
+		if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
+        {
+            isRadiale           = next_goal_msg.response.isRadiale;
+            x_target     = next_goal_msg.response.latitude[0];
+            y_target    = next_goal_msg.response.longitude[0];
+            still_n_mission     = next_goal_msg.response.remainingMissions;
+    		             
+    		if(isRadiale)
+            {
+                x_target_start_line = next_goal_msg.response.latitude[1];
+                y_target_start_line = next_goal_msg.response.longitude[1];
+                
+                yaw_radiale = atan2(x_target - x_target_start_line, y_target - y_target_start_line);
+            }
+
+        } else {
+            state = "IDLE";
+        }
+	} else {
+		ROS_WARN("Init call failed");
+	}
+
     
     while(ros::ok())
     {
-        double det;
-
         computeDistance();
 
-        if(isRadiale)
-        {
-            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
-            det     = sin(yaw_radiale - yaw_boat - gis) * dist;
-            gis     = (yaw_radiale - atan(det)/2.0) - yaw_boat;  
-        } else {
-            gis     = atan2(longitude_target - longitude_boat, latitude_target - latitude_boat);
-        }
-
-        e   = 2*atan(tan(gis/2));
-        if(e < 0.0005 && e > -0.0005)
-        {
-            u_yaw = 0.0;
-        } else if (e > 2.5 || e < -2.5) {
-            u_yaw = 0.8;
-        } else {
-            u_yaw = atan(e)/3.0;
-        }
-
-        cons_msgs.angular.z = u_yaw;
-        cons_msgs.linear.x  = 0;
-
-        cons_pub.publish(cons_msgs);
-
-        if(dist < dist_max && ros::Time::now().toSec()-compt > 2.0)
+        if(dist < dist_max)
         {
             if (next_goal_client.call(next_goal_msg))
             {
                 if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
                 {
                     isRadiale           = next_goal_msg.response.isRadiale;
-                    latitude_target     = next_goal_msg.response.latitude[0];
-                    longitude_target    = next_goal_msg.response.longitude[0];
+                    x_target     = next_goal_msg.response.latitude[0];
+                    y_target    = next_goal_msg.response.longitude[0];
                     still_n_mission     = next_goal_msg.response.remainingMissions;
                     if(isRadiale)
                     {
-                        yaw_radiale = atan2(longitude_target - next_goal_msg.response.longitude[1], latitude_target - next_goal_msg.response.latitude[1]);
+                        x_target_start_line = next_goal_msg.response.latitude[1];
+                        y_target_start_line = next_goal_msg.response.longitude[1];
+                        
+                        yaw_radiale = atan2(x_target - x_target_start_line, y_target - y_target_start_line);
                     }
                 } else {
                     state = "IDLE";
                 }
+                num_waypoints ++;
             } else{
                 ROS_ERROR("Failed to call service");
             }
-            compt = ros::Time::now().toSec();
         }
-        
+
+        if(isRadiale)
+        {
+            //yaw_bar     = atan2(y_target - y_boat, x_target - x_boat);
+            //det     = sin(yaw_radiale - yaw_boat - yaw_bar) * dist;
+            //yaw_bar     = (yaw_radiale - atan(det)/2.0) - yaw_boat; 
+
+            det         = (x_target - x_target_start_line)*(y_boat - y_target_start_line) - (x_boat - x_target_start_line)*(y_target - y_target_start_line);
+            dist_line   = det / (pow(pow(x_target - x_target_start_line,2) + pow(y_target - y_target_start_line,2), 0.5));
+            yaw_bar     = yaw_radiale + 0.4 * tanh(dist_line);
+        } else {
+            yaw_bar     = atan2(x_target - x_boat, y_target - y_boat);
+        }
+
+        e   = 2.0*atan(tan((yaw_bar - yaw_boat)/2.0));
+        if(abs(e) < zone_morte)
+        {
+            u_yaw = 0.0;
+        } else if (abs(e) > full_left) {
+            u_yaw = 0.8;
+        } else {
+            u_yaw = k*e;
+        }
+
+        cons_msgs.angular.z = u_yaw;
+        cons_msgs.linear.x  = 0.7;
+
+        cons_pub.publish(cons_msgs);
+
+        debug_msgs.linear.x = isRadiale;
+        debug_msgs.linear.y = yaw_radiale;
+        debug_msgs.linear.z = dist_line;
+        debug_msgs.angular.x = yaw_bar;
+        debug_msgs.angular.y = e;
+        debug_msgs.angular.z = num_waypoints;
+
+        debug_pub.publish(debug_msgs);
+
         ros::spinOnce();
         loop_rate.sleep();
     }
