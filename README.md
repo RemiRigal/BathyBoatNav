@@ -46,6 +46,7 @@ There are several nodes which perform different tasks:
 - *gps_converter* which converts the gps positions from latitude/longitude to Lambert and inversely
 - *tcp_server_send* which sends data from the robot to the WebApp (positions, motors thrust, batteries level ...)
 - *tcp_server_recv* which receives the commands from the WebApp (start, stop ...)
-- *regul_helios* which do the regulation of the robot based on a PID and sends the commands to the pololu node
+- *regul_helios* which do the regulation of the robot based on a PID and sends the commands to the *pololu* node
 - *pololu* which sends commands converted in PWM to the motors 
 - *simu_helios* which simulates the evolution of the robot in time and space in function of the commands
+- *fsm* which is in charge of the state machine of the robot
