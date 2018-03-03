@@ -3,102 +3,117 @@
 #include <string>
 #include <vector>
 
-#include "std_msgs/Float64.h"
-#include "geometry_msgs/Point.h"
-#include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/Twist.h"
-#include "geometry_msgs/TransformStamped.h"
 #include "visualization_msgs/Marker.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
 
-
 using namespace std;
 
-double x[3];
 double dt = 0.1;
-double u_yaw;
-double speed;
+
+double x[2], yaw, speed;
+
+double u_yaw, u_speed;
 
 string name;
+
+double offset_x, offset_y;
 
 const double Pi = 3.14159265358979323846;
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     u_yaw   = msg->angular.z;
+    u_speed = 0;
 }
 
 void evol()
 {
-    x[0] = x[0] + speed*dt*cos(x[2]);
-    x[1] = x[1] + speed*dt*sin(x[2]);
-    x[2] = x[2] + dt*u_yaw;
+    x[0]    += speed*dt*cos(yaw);
+    x[1]    += speed*dt*sin(yaw);
+    
+    yaw     += dt*u_yaw;
+    speed   += dt*u_speed;
 }
 
 int main(int argc, char** argv)
 {
+    // ROS Init
+
     ros::init(argc, argv, "simu_boat");
     ros::NodeHandle n;
     
-        // Parametres initiaux
+    // Initial parameters
+
     n.param<double>("Pos_x", x[0], 0);
     n.param<double>("Pos_y", x[1], 0);
-    n.param<double>("Theta", x[2], 0);
-    n.param<double>("Cons_u", u_yaw, 0);
-    n.param<double>("Vitesse_boat", speed, 1);
-    n.param<string>("Name_boat", name, "unknown");
-    
+    n.param<double>("Yaw", yaw, 0);
+    n.param<double>("Speed", speed, 1);
+
+    n.param<string>("Name", name, "unknown");
+
     ros::Rate loop_rate(25);
     
     tf::Quaternion q;
     
-        // Liste de points
+    // Setting offset for RVIZ
+
+    offset_y = x[0];
+    offset_y = x[1];
+
+    // Position history
+    
     geometry_msgs::Point pt_boat;
-    geometry_msgs::Point pt_magneto;
     pt_boat.x = x[0];
     pt_boat.y = x[1];
     pt_boat.z = 0;
 
     vector<geometry_msgs::Point> pos;
     
-        // Marker du bateau
+    // Boat marker
+    
     ros::Publisher mark_pub = n.advertise<visualization_msgs::Marker>("/mark_boat", 1000);
     visualization_msgs::Marker msgs_boat;
 
-        // Marker de ligne
+    // Line marker
+    
     ros::Publisher mark_line = n.advertise<visualization_msgs::Marker>("/line_boat", 1000);
     visualization_msgs::Marker msgs_line;
 
-        // Pub data boat
+    // Publisher
+    
     ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("data_boat", 1000);
     geometry_msgs::Twist data_boat;
 
-        // Message contenant la consigne
+    // Subscriber
+    
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, chatCallback);
     
-        // TF
+    // TF
+    
     tf2_ros::TransformBroadcaster br;
     
     geometry_msgs::TransformStamped transformStamped;
     
     transformStamped.header.frame_id    = "map";
     transformStamped.child_frame_id     = name;
-    transformStamped.transform.translation.z      = 0.0;
+    transformStamped.transform.translation.z = 0.0;
     
     while(ros::ok())
     {
         evol();
         
-        q.setRPY(0, 0, x[2]);
+        q.setRPY(0, 0, yaw);
         
-            // Topic tf
+        // TF evolution and send
+        
         transformStamped.header.stamp = ros::Time::now();
         
-        transformStamped.transform.translation.x  = x[0];
-        transformStamped.transform.translation.y  = x[1];
+        transformStamped.transform.translation.x  = x[0] - offset_x;
+        transformStamped.transform.translation.y  = x[1] - offset_y;
         transformStamped.transform.rotation.x     = q.getX();
         transformStamped.transform.rotation.y     = q.getY();
         transformStamped.transform.rotation.z     = q.getZ();
@@ -106,25 +121,23 @@ int main(int argc, char** argv)
         
         br.sendTransform(transformStamped);
 
-            // Data boat
-        //data_boat.linear.x = speed;
+        // Data boat
+
         data_boat.linear.x = x[0];
         data_boat.linear.y = x[1];
 
-        data_boat.angular.x = x[2];
-        data_boat.angular.y = 0.0;
-        data_boat.angular.z = 0.0;
+        data_boat.angular.x = yaw;
 
         rens_pub.publish(data_boat);
-        
-                // Topic pour RVIZ
 
-            // Mark boat
+        // Boat marker
+
         msgs_boat.header.frame_id = name;
         msgs_boat.header.stamp = ros::Time::now();
         msgs_boat.ns = ros::this_node::getNamespace();
         msgs_boat.id = 0;
-        msgs_boat.type = visualization_msgs::Marker::MESH_RESOURCE;
+        // msgs_boat.type = visualization_msgs::Marker::MESH_RESOURCE;
+        msgs_boat.type = visualization_msgs::Marker::SPHERE;
         msgs_boat.action = visualization_msgs::Marker::ADD;
         msgs_boat.scale.x = 1.0;
         msgs_boat.scale.y = 1.0;
@@ -133,18 +146,20 @@ int main(int argc, char** argv)
         msgs_boat.color.r = 1.0;
         msgs_boat.color.g = 1.0;
         msgs_boat.color.b = 1.0;
-        msgs_boat.mesh_resource = "package://BathyBoatNav/mesh/boat.dae";
+        // msgs_boat.mesh_resource = "package://BathyBoatNav/mesh/boat.dae";
         
         mark_pub.publish(msgs_boat);
         
-            // Draw line
+        // Draw line
+
         pt_boat.x = x[0];
         pt_boat.y = x[1];
         pt_boat.z = 0;
         
         pos.push_back(pt_boat);
         
-                // Mark Line
+        // Line marker
+        
         msgs_line.header.frame_id = "map";
         msgs_line.header.stamp = ros::Time::now();
         msgs_line.ns = ros::this_node::getNamespace();

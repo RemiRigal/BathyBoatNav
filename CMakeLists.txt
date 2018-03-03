@@ -70,6 +70,7 @@ add_service_files(
   FILES
   next_goal.srv
   changeState.srv
+  gps_conversion.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -154,14 +155,12 @@ add_executable(tcp_server  src/tcp_server.cpp)
 
 add_executable(pololu             src/pololu.cpp)
 add_executable(regul_helios       src/regul_helios.cpp)
-add_executable(regul_helios_simu  src/regul_helios_simu.cpp)
 add_executable(simu_helios 	      src/simu_helios.cpp)
-
-add_executable(target   src/target.cpp)
 
 add_executable(fsm src/fsm.cpp)
 
 #add_executable(mission_interpreter src/mission_interpreter.cpp)
+add_executable(gps_converter   src/gps_converter.cpp)
 
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -180,13 +179,6 @@ add_executable(fsm src/fsm.cpp)
 target_link_libraries(tcp_server
   ${catkin_LIBRARIES}
 )
-#target_link_libraries(serveur
-#  ${catkin_LIBRARIES}
-#)
-
-#target_link_libraries(fix_rtk
-#  ${catkin_LIBRARIES}
-#)
 
 target_link_libraries(pololu
   ${catkin_LIBRARIES}
@@ -196,13 +188,12 @@ target_link_libraries(regul_helios
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(regul_helios_simu
-  ${catkin_LIBRARIES}
-)
 target_link_libraries(simu_helios
   ${catkin_LIBRARIES}
 )
-target_link_libraries(target
+
+target_link_libraries(gps_converter
+  proj
   ${catkin_LIBRARIES}
 )
 

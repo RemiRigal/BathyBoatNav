@@ -1,0 +1,6 @@
+int32 mode
+float64 gps_x
+float64 gps_y
+---
+float64 converted_x
+float64 converted_y
