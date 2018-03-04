@@ -1,14 +1,16 @@
 #include "../include/gps_converter.h"
 
-void Converter::Converter()
+using namespace std;
+
+Converter::Converter()
 {
-	Handle.param<string>('Input_GPS_msg', input_GPS_msg, 'nav');
-	Handle.param<string>('Input_yaw_msg', input_yaw_msg, 'imu_attitude');
-	Handle.param<string>('Output_msg', output_msg, 'gps_angle_boat');
+	Handle.param<string>("Input_GPS_msg", input_GPS_msg, "nav");
+	Handle.param<string>("Input_yaw_msg", input_yaw_msg, "imu_attitude");
+	Handle.param<string>("Output_msg", output_msg, "gps_angle_boat");
 
 	converterSrv = Handle.advertiseService("/gps_converter", &Converter::convertService, this);
-	gps_sub = Handle.subscribe(input_GPS_msg, 1000, convert2LambertCallback); 
-	angle_sub = Handle.subscribe(input_yaw_msg, 1000, angleCallback); 
+	gps_sub = Handle.subscribe(input_GPS_msg, 1000, &Converter::convert2LambertCallback, this); 
+	angle_sub = Handle.subscribe(input_yaw_msg, 1000, &Converter::angleCallback, this); 
 	pub = Handle.advertise<geometry_msgs::Twist>(output_msg, 100); 
     ROS_INFO("Node %s ready to run.", ros::this_node::getName().c_str());
 }
@@ -17,13 +19,16 @@ Converter::~Converter()
 {}
 
 
-void Converter::convert2LambertCallback(sensor_msgs::NavSatFix::ConstPtr& msg){
-	BathyBoatNav::gps_conversion::Response res = this->Latlong_to_lambert(msg.latitude, msg.latitude)
+void Converter::convert2LambertCallback(sensor_msgs::NavSatFix::ConstPtr& msg)
+{
+	BathyBoatNav::gps_conversion::Response res = this->Latlong_to_lambert(msg->latitude, msg->latitude);
 	pose.linear.x = res.converted_x;
 	pose.linear.y = res.converted_y;
 }
-void Converter::angleCallback(geometry_msgs::Vector3Stamped::ConstPtr& msg){
-	pose.linear.z = msg.vector.z ;
+
+void Converter::angleCallback(geometry_msgs::Vector3Stamped::ConstPtr& msg)
+{
+	pose.linear.z = msg->vector.z ;
 }
 
 bool Converter::convertService(BathyBoatNav::gps_conversion::Request &req, BathyBoatNav::gps_conversion::Response &res)

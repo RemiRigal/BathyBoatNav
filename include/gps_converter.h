@@ -9,7 +9,7 @@
 #include "geometry_msgs/Vector3Stamped.h"
 #include "geometry_msgs/Twist.h"
 #include "BathyBoatNav/gps_conversion.h"
-
+#include <string>
 
 class Converter {
 private:
@@ -22,6 +22,13 @@ private:
     BathyBoatNav::gps_conversion::Response Lambert_to_latlong(double x, double y);
     BathyBoatNav::gps_conversion::Response Latlong_to_lambert(double x, double y);
     bool convertService(BathyBoatNav::gps_conversion::Request &req, BathyBoatNav::gps_conversion::Response &res);
+
+    std::string input_GPS_msg;
+    std::string input_yaw_msg;
+    std::string output_msg;
+
+    void convert2LambertCallback(sensor_msgs::NavSatFix::ConstPtr& msg);
+    void angleCallback(geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 public:
     Converter();
