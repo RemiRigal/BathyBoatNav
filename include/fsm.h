@@ -11,6 +11,7 @@
 
 #include "ros/ros.h"
 #include "std_srvs/Trigger.h"
+#include "std_msgs/Int16.h"
 #include "BathyBoatNav/String.h"
 #include "BathyBoatNav/new_state.h"
 
@@ -25,6 +26,9 @@ class FSM{
     
 	private: 
 		ros::NodeHandle Handle;
+
+		ros::Publisher state_pub;
+		std_msgs::Int16 state_msg;
 		
 		ros::ServiceServer changeStateSrv;
 		

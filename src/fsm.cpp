@@ -6,6 +6,8 @@ FSM::FSM()
 {
 	state = IDLE;
 
+	state_pub = Handle.advertise<std_msgs::Int16>("/current_state", 1000);
+
 	changeStateSrv = Handle.advertiseService("/changeStateSrv", &FSM::changeState, this);
 
 	pololuLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("/pololu_state");
@@ -27,6 +29,9 @@ void FSM::RunContinuously()
 	ros::Rate loop_rate(25);
 	while(ros::ok())
 	{
+		state_msg.data = state;
+		state_pub.publish(state_msg);
+
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

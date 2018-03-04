@@ -17,8 +17,8 @@
             <param name="Simu"          type="bool"     value="true"/>
         </node>
 
-        <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
-        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
+        <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 1" output="screen" />
+        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 0" output="screen" />
 
         <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
             <param name="Path"          type="string"   value="/dev/pololu"/>

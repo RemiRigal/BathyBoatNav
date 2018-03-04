@@ -32,7 +32,7 @@ socklen_t lgadresse;
 
 string msg;
 
-bool isSending;
+int isSending;
 int port;
 
 double latitude, longitude, yaw, pitch, roll, vit, wifi_lvl;
@@ -201,7 +201,7 @@ void accept_loop()
         	exit(1);
 		}
 
-		if(isSending)
+		if(isSending == 1)
 		{
 			send_to();
 		} else {
@@ -213,8 +213,6 @@ void accept_loop()
 
 void server(int port)
 {
-	
-
 	if((socket_RV=socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		perror("Unable to create socket");
@@ -289,7 +287,7 @@ int main(int argc, char *argv [])
     //n.param<bool>("isSending", isSending, true);
     //n.param<int>("port", port, 29200);
 
-    isSending = argv[2];
+    isSending = atoi(argv[2]);
     port = atoi(argv[1]);
 
     yaw = 0.0;

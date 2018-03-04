@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "std_msgs/Int16.h"
 #include "geometry_msgs/Twist.h"
 #include "visualization_msgs/Marker.h"
 #include "BathyBoatNav/offset_simu.h"
@@ -10,6 +11,8 @@
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
+
+#include "../include/state.h"
 
 using namespace std;
 
@@ -23,7 +26,14 @@ string name;
 
 double offset_x, offset_y;
 
+State state;
+
 const double Pi = 3.14159265358979323846;
+
+void stateCallback(const std_msgs::Int16::ConstPtr& msg)
+{
+    state = State(msg->data);
+}
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
@@ -41,15 +51,20 @@ bool offsetCallback(BathyBoatNav::offset_simu::Request &req, BathyBoatNav::offse
 
 void evol()
 {
-    x[0]    += speed*dt*cos(yaw);
-    x[1]    += speed*dt*sin(yaw);
-    
-    yaw     += dt*u_yaw;
-    speed   += dt*u_speed;
+    if(state == RUNNING)
+    {
+        x[0]    += speed*dt*cos(yaw);
+        x[1]    += speed*dt*sin(yaw);
+
+        yaw     += dt*u_yaw;
+        speed   += dt*u_speed;
+    }
 }
 
 int main(int argc, char** argv)
 {
+    state = RUNNING;
+
     // ROS Init
 
     ros::init(argc, argv, "simu_boat");
@@ -100,6 +115,7 @@ int main(int argc, char** argv)
     // Subscriber
     
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, chatCallback);
+    ros::Subscriber state_sub = n.subscribe("/current_state", 1000, stateCallback);
 
     // Offset service
 
