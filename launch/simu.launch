@@ -1,32 +1,31 @@
 <launch>
-    
-    <group ns="Environment">
-        <param name="Name_target" type="string" value="target"/>
-        <param name="Square_map" type="int" value="100"/>
-        <param name="Target_mode" type="string" value="line"/>
-
-        <node name="cible" pkg="BathyBoatNav" type="target" output="screen"/>
-    </group>
 
     <group ns="boat">
-        <param name="Pos_x" type="double" value="-50.0"/>
-        <param name="Pos_y" type="double" value="80.0"/>
-        <param name="Theta" type="double" value="-1.57"/>
-        
-        <param name="Cons_u" type="double" value="0.0"/>
-        
-        <param name="Name_boat" type="string" value="boat"/>
-        <param name="Vitesse_boat" type="double" value="1.0"/>
-        
-        <param name="Regul" type="string" value="line"/>
-        
-        <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" />
-        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios_simu" output="screen" />
 
+        <node name="fsm_manager" pkg="BathyBoatNav" type="fsm" output="screen"/>
+       
+        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen"/>
+
+        <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" output="screen"/>
         
+        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen">
+            <param name="Name_boat"     type="string"   value="helios"/>
+            <param name="Full_left"     type="double"   value="2.5"/>
+            <param name="Dead_zone"     type="double"   value="0.05"/>
+            <param name="Coeff"         type="double"   value="2.0"/>
+            <param name="Accept_gap"    type="double"   value="5.0"/>
+            <param name="Simu"          type="bool"     value="true"/>
+        </node>
+
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 true" output="screen" />
-            
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="23200 false" output="screen" />
+
+        <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
+            <param name="Path"          type="string"   value="/dev/pololu"/>
+            <param name="Cons_channel"  type="string"   value="cons_boat"/>
+            <param name="Turn_gap"      type="int"      value="1000"/>
+            <param name="Simu"          type="bool"     value="true"/>
+        </node>
 
     </group>
 

@@ -5,6 +5,7 @@
 
 #include "geometry_msgs/Twist.h"
 #include "visualization_msgs/Marker.h"
+#include "BathyBoatNav/offset_simu.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
@@ -28,6 +29,14 @@ void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     u_yaw   = msg->angular.z;
     u_speed = 0;
+}
+
+bool offsetCallback(BathyBoatNav::offset_simu::Request &req, BathyBoatNav::offset_simu::Response &res)
+{
+    offset_x = req.x_lambert;
+    offset_y = req.y_lambert;
+
+    return true;
 }
 
 void evol()
@@ -85,12 +94,16 @@ int main(int argc, char** argv)
 
     // Publisher
     
-    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("data_boat", 1000);
+    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("gps_angle_boat", 1000);
     geometry_msgs::Twist data_boat;
 
     // Subscriber
     
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, chatCallback);
+
+    // Offset service
+
+    ros::ServiceServer offset_srv = n.advertiseService("offset_position", offsetCallback);
     
     // TF
     
@@ -126,7 +139,7 @@ int main(int argc, char** argv)
         data_boat.linear.x = x[0];
         data_boat.linear.y = x[1];
 
-        data_boat.angular.x = yaw;
+        data_boat.angular.z = yaw;
 
         rens_pub.publish(data_boat);
 

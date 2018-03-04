@@ -5,15 +5,20 @@
 
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Int64.h"
+#include "BathyBoatNav/new_state.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
 
 #include "maestro.h"
 
+#include "../include/state.h"
+
 using namespace std;
 
 double u_throttle, u_yaw;
+
+State state;
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
@@ -29,6 +34,22 @@ void init_servo(int fd)
 	sleep(2);
 }
 
+bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_state::Response &res)
+{
+    int idx_state = req.state;
+
+    if( idx_state <= 4 && idx_state >= 0 )
+    {
+        state = State(idx_state);
+        res.success = true;
+    } else {
+        res.success = false;
+    }
+
+    ROS_INFO("Pololu new state %d", state);
+
+    return true;
+}
 
 int main(int argc, char *argv [])
 {
@@ -38,39 +59,46 @@ int main(int argc, char *argv [])
 	string channel;
 	int gap;
 
+	bool isSimulation;
+
 	double left_mot, right_mot;
 	left_mot = 0;
 	right_mot = 0;
 
-		// Ros init
+	// Ros init
 
 	ros::init(argc, argv, "pololu");
 	ros::NodeHandle n;
     
 	ros::Rate loop_rate(25);
     
-        // Initials parameters
+    // Initials parameters
     
 	n.param<string>("Path", path, "/dev/pololu_servo_serial");
 	n.param<string>("Cons_channel", channel, "cons_boat");
 	n.param<int>("Turn_gap", gap, 500);
+	n.param<bool>("Simu", isSimulation, true);
 
-    	// Connection to Maestro
+	// Connection to Maestro
 
-	if( (fd = maestroConnect(path.c_str())) == -1 )
+	if(!isSimulation)
 	{
-		perror("Unable to find Pololu");
-		exit(1);
+		if( (fd = maestroConnect(path.c_str())) == -1 )
+		{
+			perror("Unable to find Pololu");
+			exit(1);
+		}
+
+		printf("Pololu connected\n");
+		init_servo(fd);
 	}
 
-	printf("Pololu connected\n");
-	init_servo(fd);
 
-		// Subscribe msgs
+	// Subscribe msgs
 
 	ros::Subscriber cons_sub = n.subscribe(channel, 1000, chatCallback);
 
-		// Publisher
+	// Publisher
 
 	ros::Publisher left_mot_pub = n.advertise<std_msgs::Int64>("left_mot", 1000);
     std_msgs::Int64 left_mot_msgs;
@@ -78,12 +106,20 @@ int main(int argc, char *argv [])
 	ros::Publisher right_mot_pub = n.advertise<std_msgs::Int64>("right_mot", 1000);
     std_msgs::Int64 right_mot_msgs;
 
+	// State service
+
+    ros::ServiceServer state_srv = n.advertiseService("/pololu_state", stateCallback);
 
 	while(ros::ok())
 	{
-
-		left_mot 	= 4000 + u_throttle*(4000 - gap) + u_yaw*gap;
-		right_mot 	= 4000 + u_throttle*(4000 - gap) - u_yaw*gap;
+		if(state == RUNNING)
+		{
+			left_mot 	= 4000.0 + u_throttle*(4000.0 - gap) + u_yaw*gap;
+			right_mot 	= 4000.0 + u_throttle*(4000.0 - gap) - u_yaw*gap;
+		} else {
+			left_mot 	= 0.0;
+			right_mot 	= 0.0;
+		}
 
 		left_mot_msgs.data = left_mot;
 		left_mot_pub.publish(left_mot_msgs);
@@ -91,8 +127,11 @@ int main(int argc, char *argv [])
 		right_mot_msgs.data = right_mot;
 		right_mot_pub.publish(right_mot_msgs);
 
-		maestroSetTarget(fd, 1, left_mot);
-		maestroSetTarget(fd, 0, right_mot);
+		if(!isSimulation)
+		{
+			maestroSetTarget(fd, 1, left_mot);
+			maestroSetTarget(fd, 0, right_mot);
+		}
 
 		ros::spinOnce();
 		loop_rate.sleep();

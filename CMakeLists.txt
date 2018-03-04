@@ -69,8 +69,10 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   next_goal.srv
-  changeState.srv
+  String.srv
   gps_conversion.srv
+  new_state.srv
+  offset_simu.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -200,6 +202,7 @@ target_link_libraries(gps_converter
 target_link_libraries(fsm
   ${catkin_LIBRARIES}
 )
+
 #target_link_libraries(mission_interpreter
 #  ${catkin_LIBRARIES}
 #)

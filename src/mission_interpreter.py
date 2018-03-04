@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from BathyBoatNav.srv import *
+from std_srvs.srv import Trigger
 from collections import defaultdict
 import rospy
 import json
@@ -9,12 +10,13 @@ import sys
 from functools import partial
 import pyproj
 
-global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent, name_mission_file
+global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent, name_mission_file, ready
 latitudes = defaultdict(list)
 longitudes = defaultdict(list)
 missions = defaultdict(list)
 nbrMissions = 0
 nbrMissionsSent = 0
+ready = False
 
 def convert(latitude, longitude):
 
@@ -30,7 +32,7 @@ def convert(latitude, longitude):
 def readFile():
 	global name_mission_file
 
-	path = "/home/guerledan4/BathyBoatMissions/" + name_mission_file
+	path = "/home/Helios/Missions/" + name_mission_file
 	print(path)
 	if os.path.isfile(path):
 		with open(path, "r") as jsonFile:
@@ -70,10 +72,12 @@ def readFile():
 	
 			if badJson:
 				rospy.logerr("Wrong conventions Json mission file")
-				sys.exit(0)
+				return False
 	else:
 		rospy.logerr("No mission file found")
-		sys.exit(0)		
+		return False
+
+	return True
 		
 def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
@@ -97,16 +101,36 @@ def sendPointService(req):
 		res['remainingMissions'] = nbrMissions - nbrMissionsSent
 
 	return res
-		
+
+def newMission(req):
+	global name_mission_file
+	name_mission_file = req['message']
+
+	res['success'] = readFile()
+
+	ready = True
+
+	rospy.wait_for_service('/changeStateSrv')
+	try:
+		changeStateSrv = rospy.ServiceProxy('/changeStateSrv', String)
+		resp1 = changeStateSrv("PAUSED")
+		return resp1.sum
+	except rospy.ServiceException, e:
+		print "Service call failed: %s"%e
+
+	return res
+
+def isReady(req):
+	res['success'] = ready
+
+	return res
 
 if __name__ == "__main__":
 	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
 
 	name_mission_file = rospy.get_param('/name_mission', 'aignan_3_radiales.json')
 
-	readFile()
-	s = rospy.Service('/next_goal', next_goal, sendPointService)
+	goal_srv 	= rospy.Service('/next_goal', next_goal, sendPointService)
+	mission_srv = rospy.Service('/new_mission', String, newMission)
+	ready_srv 	= rospy.Service('/isReady', Trigger, isReady)
 	rospy.spin()
-		
-		
-

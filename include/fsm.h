@@ -10,16 +10,11 @@
 #include <boost/algorithm/string.hpp>
 
 #include "ros/ros.h"
-#include "BathyBoatNav/changeState.h"
+#include "std_srvs/Trigger.h"
+#include "BathyBoatNav/String.h"
+#include "BathyBoatNav/new_state.h"
 
-enum State{
-    INIT 		= 0,
-    RUNNING 	= 1,
-    IDLE 		= 2,
-    RTL 		= 3,
-    STOP 		= 4,
-    EMERGENCY 	= 5
-};
+#include "../include/state.h"
 
 class FSM{
 
@@ -30,11 +25,21 @@ class FSM{
     
 	private: 
 		ros::NodeHandle Handle;
+		
 		ros::ServiceServer changeStateSrv;
+		
+		ros::ServiceClient pololuLeader;
+		ros::ServiceClient regulLeader;
+		ros::ServiceClient missionReady;
+
+		BathyBoatNav::new_state new_state_msg;
+		std_srvs::Trigger mission_ready_msg;
+		
 		State state;
 
-		bool changeState(BathyBoatNav::changeState::Request &req, BathyBoatNav::changeState::Response &res);
+		bool changeState(BathyBoatNav::String::Request &req, BathyBoatNav::String::Response &res);
 		void setState(State newState);
+		bool advertChangeState();
 };
 
 #endif

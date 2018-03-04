@@ -17,7 +17,11 @@
 #include "geometry_msgs/Vector3Stamped.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
-#include "geometry_msgs/Pose2D.h"
+#include "std_msgs/Float64.h"
+
+#include "BathyBoatNav/String.h"
+
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
@@ -36,6 +40,8 @@ double u_yaw, u_throttle;
 
 double left_mot, right_mot;
 
+int state;
+
 // SIGACTION
 void signals_handler(int signal_number)
 {
@@ -49,6 +55,7 @@ void signals_handler(int signal_number)
 
 void send_to ()
 {
+    ros::NodeHandle n;
 	ros::Rate loop_rate(10);
 	char buffer[500];
 	while(ros::ok())
@@ -61,7 +68,31 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(),  left_mot, right_mot);
+		sprintf(buffer,"$MOT;%lf;%lf;%lf\n",ros::Time::now().toSec(), left_mot, right_mot);
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
+
+		sprintf(buffer,"$BATT;%lf;%d;%d\n",ros::Time::now().toSec(), (rand() % 101), (rand() % 101));
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
+
+		sprintf(buffer,"$DATA;%lf;%lf;%lf\n",ros::Time::now().toSec(), 0.0, 0.0);
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
+
+		sprintf(buffer,"$STATE;%lf;%d\n",ros::Time::now().toSec(), state);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -76,11 +107,25 @@ void send_to ()
 
 void rec_from ()
 {
+    ros::NodeHandle n;
 	ros::Rate loop_rate(10);
 	char c[1];
 	string rcv_msg;
 	int res;
 	int i, j;
+
+	double speed_hat = 0.5;
+
+	vector<string> split_msg;
+
+    ros::Publisher speed_pub = n.advertise<std_msgs::Float64>("/speed_hat", 1000);
+    std_msgs::Float64 speed_msg;
+
+	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::String>("/new_mission");
+    BathyBoatNav::String mission_path_msg;
+
+    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::String>("/changeStateSrv");
+    BathyBoatNav::String change_state_msg;
 
 	while(ros::ok())
 	{
@@ -96,7 +141,47 @@ void rec_from ()
 			rcv_msg.append(c);
 		} while((int)c[0] != 0);
 
-		printf("Recv : %s\n", rcv_msg.c_str());
+		boost::split(split_msg, rcv_msg, boost::is_any_of("|"));
+
+		if(split_msg[0] == "MISSION")
+		{
+			mission_path_msg.request.message = split_msg[1];
+
+			if(mision_path_client.call(mission_path_msg))
+			{                
+				if(mission_path_msg.response.success)
+				{
+					ROS_INFO("Mission parsed");
+				} else {
+					ROS_INFO("Mission parsing failed");
+				}
+			} else {
+				ROS_WARN("Call to mission interpreter failed");
+			}
+
+		} else if(split_msg[0] == "SPEED") {
+			speed_hat = atof(split_msg[1].c_str());
+		} else {
+
+			change_state_msg.request.message = split_msg[1];
+			
+			if(change_state_client.call(change_state_msg))
+			{                
+				if(change_state_msg.response.success)
+				{
+					ROS_INFO("State changed");
+				} else {
+					ROS_WARN("Failed to change state. Msg was %s", split_msg[1].c_str());
+				}
+			} else {
+				ROS_WARN("Call to fsm failed");
+			}
+
+		}
+
+		speed_msg.data = speed_hat;
+		speed_pub.publish(speed_msg);
+
 		rcv_msg.clear();
 	}
 }
@@ -158,25 +243,10 @@ void server(int port)
 	accept_loop();
 }
 
-/*
-void dataCallback(const std_msgs::String::ConstPtr& ros_msg)
-{
-	msg = ros_msg->data;
-}
-*/
-
-
-
 void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
     latitude 	= msg->latitude;
     longitude 	= msg->longitude;
-}
-
-void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-    u_throttle 	= msg->linear.x;
-    u_yaw 		= msg->angular.z;
 }
 
 void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
@@ -223,6 +293,7 @@ int main(int argc, char *argv [])
     port = atoi(argv[1]);
 
     yaw = 0.0;
+    state = 0;
 
     cout << "Type of server : " << isSending << " | Port : " << port << endl;
 

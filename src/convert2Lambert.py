@@ -61,7 +61,7 @@ while not rospy.is_shutdown():
 
 	x_lambert, y_lambert, x_mission_lambert, y_mission_lambert = convert()
 
-	pose = Twist(Vector3(x_lambert, y_lambert, yaw), Vector3(0, 0, 0))
+	pose = Twist(Vector3(x_lambert, y_lambert, 0), Vector3(0, 0, yaw))
 
 	pub.publish(pose) 
 
