@@ -12,6 +12,7 @@
 #include "BathyBoatNav/next_goal.h"
 #include "BathyBoatNav/new_state.h"
 #include "BathyBoatNav/offset_simu.h"
+#include "BathyBoatNav/pid_coeff.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
@@ -69,6 +70,16 @@ bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_stat
     } else {
         res.success = false;
     }
+
+    return true;
+}
+
+bool pidCallback(BathyBoatNav::pid_coeff::Request &req, BathyBoatNav::pid_coeff::Response &res)
+{
+
+    P = req.k_P;
+    I = req.k_I;
+    res.success = true;
 
     return true;
 }
@@ -133,6 +144,8 @@ int main(int argc, char** argv)
     BathyBoatNav::message change_state_msg;
 
     ros::ServiceServer state_srv = n.advertiseService("/regul_state", stateCallback);
+
+    ros::ServiceServer pid_srv = n.advertiseService("/PID_coeff", pidCallback);
 
     while(ros::ok())
     {

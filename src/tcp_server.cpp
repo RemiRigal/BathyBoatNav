@@ -22,6 +22,7 @@
 
 #include "BathyBoatNav/message.h"
 #include "BathyBoatNav/gps_conversion.h"
+#include "BathyBoatNav/pid_coeff.h"
 #include "../include/state.h"
 
 #include <boost/algorithm/string.hpp>
@@ -194,6 +195,9 @@ void rec_from ()
     ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("/changeStateSrv");
     BathyBoatNav::message change_state_msg;
 
+    ros::ServiceClient change_factor_client = n.serviceClient<BathyBoatNav::pid_coeff>("/PID_coeff");
+    BathyBoatNav::pid_coeff pid_coeff_msg;
+
 	while(ros::ok())
 	{
 		do{
@@ -225,6 +229,21 @@ void rec_from ()
 				}
 			} else {
 				ROS_WARN("Call to mission interpreter failed");
+			}
+
+		} else if(split_msg[0] == "FACTOR") {
+
+			pid_coeff_msg.request.k_P = atof(split_msg[1].c_str());
+			pid_coeff_msg.request.k_I = atof(split_msg[2].c_str());
+
+			if(change_factor_client.call(pid_coeff_msg))
+			{                
+				if(!pid_coeff_msg.response.success)
+				{
+					ROS_INFO("Mission parsing failed");
+				}
+			} else {
+				ROS_WARN("Call to regul failed for changing k_I");
 			}
 
 		} else if(split_msg[0] == "SPEED") {

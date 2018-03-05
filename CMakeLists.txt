@@ -73,6 +73,7 @@ add_service_files(
   gps_conversion.srv
   new_state.srv
   offset_simu.srv
+  pid_coeff.srv
 )
 
 ## Generate actions in the 'action' folder
