@@ -104,8 +104,6 @@ bool FSM::advertChangeState()
 		ROS_ERROR("Failed to call pololu");
 	}
 
-	ROS_INFO("Test");
-
 	if (regulLeader.call(new_state_msg))
 	{
 		regul = true;

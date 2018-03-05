@@ -46,8 +46,6 @@ bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_stat
         res.success = false;
     }
 
-    ROS_INFO("Pololu new state %d", state);
-
     return true;
 }
 

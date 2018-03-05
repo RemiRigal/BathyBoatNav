@@ -70,8 +70,6 @@ bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_stat
         res.success = false;
     }
 
-    ROS_INFO("Regul new state %d", state);
-
     return true;
 }
 

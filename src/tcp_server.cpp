@@ -21,6 +21,7 @@
 #include "std_msgs/Float64.h"
 
 #include "BathyBoatNav/message.h"
+#include "../include/state.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -142,15 +143,8 @@ void rec_from ()
 			rcv_msg.append(c);
 		} while((int)c[0] != 0);
 		
-		ROS_INFO("Msg received : %s", rcv_msg.c_str());
+		ROS_INFO("Command received : %s", rcv_msg.c_str());
 		boost::split(split_msg, rcv_msg, boost::is_any_of("|"));
-
-		ROS_INFO("Length of vector : %d", split_msg.size());
-		
-		for(int i = 0; i<split_msg.size(); i++)
-		{
-			ROS_INFO("String at %d : %s", i, split_msg[i].c_str());
-		}
 		
 		if(split_msg[0] == "MISSION")
 		{
@@ -172,7 +166,7 @@ void rec_from ()
 			speed_hat = atof(split_msg[1].c_str());
 		} else {
 
-			change_state_msg.request.message = split_msg[1];
+			change_state_msg.request.message = split_msg[0];
 			
 			if(change_state_client.call(change_state_msg))
 			{                
@@ -185,7 +179,6 @@ void rec_from ()
 			} else {
 				ROS_WARN("Call to fsm failed");
 			}
-
 		}
 
 		speed_msg.data = speed_hat;
