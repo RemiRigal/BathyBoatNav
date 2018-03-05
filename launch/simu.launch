@@ -20,10 +20,8 @@
         </node>
         
         <!-- Args server : Port (int) | Sender (int) 1 is send 0 if read -->
-    <!--
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 1" output="screen" />
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 0" output="screen" />
-    -->
 
         <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
             <param name="Path"          type="string"   value="/dev/pololu"/>

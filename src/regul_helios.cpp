@@ -30,13 +30,13 @@ double y_target_start_line, x_target_start_line;
 bool isRadiale;
 int still_n_mission;
 
-double x_boat, y_boat;
+double x_boat, y_boat, speed;
 double roll, pitch, yaw_boat, yaw_radiale;
 
 double dist_max;
 
 double u_yaw;
-double u_vitesse;
+double u_speed;
 
 double dist;
 
@@ -57,6 +57,11 @@ void posCallback(const geometry_msgs::Twist::ConstPtr& msg)
 void speedCallback(const std_msgs::Float64::ConstPtr& msg)
 {
     speed_bar = msg->data;
+}
+
+void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
+{
+    speed = msg->twist.linear.x;
 }
 
 bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_state::Response &res)
@@ -98,7 +103,7 @@ int main(int argc, char** argv)
     bool isSimulation;
 
     u_yaw = 0;
-    u_vitesse = 0;
+    u_speed = 0;
 
     I = 0;
 
@@ -122,6 +127,7 @@ int main(int argc, char** argv)
 
     ros::Subscriber data_sub   = n.subscribe("gps_angle_boat",   1000, posCallback);
     ros::Subscriber speed_sub   = n.subscribe("speed_hat",   1000, speedCallback);
+    ros::Subscriber vel_sub     = n.subscribe("nav_vel", 1000, velCallback);
 
     // Publisher
 
@@ -131,11 +137,10 @@ int main(int argc, char** argv)
     ros::Publisher debug_pub = n.advertise<geometry_msgs::Twist>("debug_boat", 1000);
     geometry_msgs::Twist debug_msgs;
 
-    // Next goal service
+    // Services
 
     ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
-
     
     ros::ServiceClient offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
     BathyBoatNav::offset_simu offset_msg;
@@ -234,8 +239,10 @@ int main(int argc, char** argv)
                 u_yaw = abs(P + I) >= 1 ? 1 : (P + I);
             }
 
+            // Speed regulation
+
             cons_msgs.angular.z = u_yaw;
-            cons_msgs.linear.x  = 0.7;
+            cons_msgs.linear.x  = speed_bar;
 
             cons_pub.publish(cons_msgs);
 

@@ -22,7 +22,7 @@ State state;
 
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    u_throttle 	= 1.0;
+    u_throttle 	= msg->linear.x;
     u_yaw 		= msg->angular.z;
 }
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv [])
     
 	n.param<string>("Path", path, "/dev/pololu_servo_serial");
 	n.param<string>("Cons_channel", channel, "cons_boat");
-	n.param<int>("Turn_gap", gap, 500);
+	n.param<int>("Turn_gap", gap, 1000);
 	// Connection to Maestro
 
 	if( (fd = maestroConnect(path.c_str())) == -1 )
