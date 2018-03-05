@@ -115,9 +115,9 @@ def newMission(req):
 
 	ready = True
 
-	rospy.wait_for_service('/changeStateSrv')
+	rospy.wait_for_service('changeStateSrv')
 	try:
-		changeStateSrv = rospy.ServiceProxy('/changeStateSrv', message)
+		changeStateSrv = rospy.ServiceProxy('changeStateSrv', message)
 		resp1 = changeStateSrv("PAUSE")
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
@@ -132,9 +132,7 @@ def isReady(req):
 if __name__ == "__main__":
 	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
 
-	name_mission_file = rospy.get_param('/name_mission', 'aignan_3_radiales.json')
-
-	goal_srv 	= rospy.Service('/next_goal', next_goal, sendPointService)
-	mission_srv = rospy.Service('/new_mission', message, newMission)
-	ready_srv 	= rospy.Service('/isReady', Trigger, isReady)
+	goal_srv 	= rospy.Service('next_goal', next_goal, sendPointService)
+	mission_srv = rospy.Service('new_mission', message, newMission)
+	ready_srv 	= rospy.Service('isReady', Trigger, isReady)
 	rospy.spin()

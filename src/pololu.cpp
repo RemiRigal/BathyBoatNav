@@ -75,20 +75,16 @@ int main(int argc, char *argv [])
 	n.param<string>("Path", path, "/dev/pololu_servo_serial");
 	n.param<string>("Cons_channel", channel, "cons_boat");
 	n.param<int>("Turn_gap", gap, 500);
-	n.param<bool>("Simu", isSimulation, true);
-
 	// Connection to Maestro
 
-	if(!isSimulation)
+	if( (fd = maestroConnect(path.c_str())) == -1 )
 	{
-		if( (fd = maestroConnect(path.c_str())) == -1 )
-		{
-			perror("Unable to find Pololu");
-			exit(1);
-		}
-
-		printf("Pololu connected\n");
+		ROS_INFO("Pololu not found. Simulation mode.");
+		isSimulation = true;
+	} else {
+		ROS_INFO("Pololu connected");
 		init_servo(fd);
+		isSimulation = false;
 	}
 
 
@@ -106,7 +102,7 @@ int main(int argc, char *argv [])
 
 	// State service
 
-    ros::ServiceServer state_srv = n.advertiseService("/pololu_state", stateCallback);
+    ros::ServiceServer state_srv = n.advertiseService("pololu_state", stateCallback);
 
 	while(ros::ok())
 	{

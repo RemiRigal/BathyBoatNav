@@ -58,21 +58,21 @@ void signals_handler(int signal_number)
 	exit(1);
 }
 
-// void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
-// {
-//     latitude 	= msg->latitude;
-//     longitude 	= msg->longitude;
-// }
+void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+{
+    latitude 	= msg->latitude;
+    longitude 	= msg->longitude;
+}
 
 void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
 {
     vit = msg->twist.linear.x;
 }
 
-// void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
-// {
-//     yaw = msg->vector.z;
-// }
+void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
+{
+    yaw = msg->vector.z;
+}
 
 void leftCallback(const std_msgs::Int64::ConstPtr& msg)
 {
@@ -103,13 +103,16 @@ void send_to ()
 	ros::Rate loop_rate(10);
 	char buffer[500];
 
+	// ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
+	// ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
+
     ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
     ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
     ros::Subscriber right_sub 	= n.subscribe("right_mot", 1000, rightCallback);
-    ros::Subscriber state_sub 	= n.subscribe("/current_state", 1000, stateCallback);
-    ros::Subscriber data_sub   	= n.subscribe("/gps_angle_boat",   1000, posCallback);
+    ros::Subscriber state_sub 	= n.subscribe("current_state", 1000, stateCallback);
+    ros::Subscriber data_sub   	= n.subscribe("gps_angle_boat",   1000, posCallback);
 
-	ros::ServiceClient convert_coord_client = n.serviceClient<BathyBoatNav::gps_conversion>("/gps_converter");
+	ros::ServiceClient convert_coord_client = n.serviceClient<BathyBoatNav::gps_conversion>("gps_converter");
     BathyBoatNav::gps_conversion convert_coord_msg;
 
 	while(ros::ok())
@@ -186,16 +189,16 @@ void rec_from ()
 
 	vector<string> split_msg;
 
-    ros::Publisher speed_pub = n.advertise<std_msgs::Float64>("/speed_hat", 1000);
+    ros::Publisher speed_pub = n.advertise<std_msgs::Float64>("speed_hat", 1000);
     std_msgs::Float64 speed_msg;
 
-	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::message>("/new_mission");
+	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::message>("new_mission");
     BathyBoatNav::message mission_path_msg;
 
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("/changeStateSrv");
+    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
     BathyBoatNav::message change_state_msg;
 
-    ros::ServiceClient change_factor_client = n.serviceClient<BathyBoatNav::pid_coeff>("/PID_coeff");
+    ros::ServiceClient change_factor_client = n.serviceClient<BathyBoatNav::pid_coeff>("PID_coeff");
     BathyBoatNav::pid_coeff pid_coeff_msg;
 
 	while(ros::ok())
@@ -351,17 +354,6 @@ int main(int argc, char *argv [])
 
     yaw = 0.0;
     state = 0;
-
-    cout << "Type of server : " << isSending << " | Port : " << port << endl;
-
-	// Subscribe msgs
-    //ros::Subscriber status_sub = n.subscribe("/msg_tcp", 1000, dataCallback);
-
-	// ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
- //    ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
-
-
-
 
 	printf("Starting server\n");
 

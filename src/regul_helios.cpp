@@ -120,8 +120,8 @@ int main(int argc, char** argv)
 
     // Subscriber
 
-    ros::Subscriber data_sub   = n.subscribe("/gps_angle_boat",   1000, posCallback);
-    ros::Subscriber speed_sub   = n.subscribe("/speed_hat",   1000, speedCallback);
+    ros::Subscriber data_sub   = n.subscribe("gps_angle_boat",   1000, posCallback);
+    ros::Subscriber speed_sub   = n.subscribe("speed_hat",   1000, speedCallback);
 
     // Publisher
 
@@ -133,19 +133,19 @@ int main(int argc, char** argv)
 
     // Next goal service
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
     BathyBoatNav::next_goal next_goal_msg;
 
     
     ros::ServiceClient offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
     BathyBoatNav::offset_simu offset_msg;
 
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("/changeStateSrv");
+    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
     BathyBoatNav::message change_state_msg;
 
-    ros::ServiceServer state_srv = n.advertiseService("/regul_state", stateCallback);
+    ros::ServiceServer state_srv = n.advertiseService("regul_state", stateCallback);
 
-    ros::ServiceServer pid_srv = n.advertiseService("/PID_coeff", pidCallback);
+    ros::ServiceServer pid_srv = n.advertiseService("PID_coeff", pidCallback);
 
     while(ros::ok())
     {

@@ -9,6 +9,7 @@ project(BathyBoatNav)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   std_msgs
   geometry_msgs
   std_srvs
@@ -58,6 +59,11 @@ find_package(catkin REQUIRED COMPONENTS
 #   Message1.msg
 #   Message2.msg
 # )
+
+add_message_files(
+  FILES
+  robot_state.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(

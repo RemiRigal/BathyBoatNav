@@ -8,7 +8,7 @@ Converter::Converter()
 	Handle.param<string>("Input_yaw_msg", input_yaw_msg, "imu_attitude");
 	Handle.param<string>("Output_msg", output_msg, "gps_angle_boat");
 
-	converterSrv = Handle.advertiseService("/gps_converter", &Converter::convertService, this);
+	converterSrv = Handle.advertiseService("gps_converter", &Converter::convertService, this);
 	gps_sub = Handle.subscribe(input_GPS_msg, 1000, &Converter::convert2LambertCallback, this); 
 	angle_sub = Handle.subscribe(input_yaw_msg, 1000, &Converter::angleCallback, this); 
 	pub = Handle.advertise<geometry_msgs::Twist>(output_msg, 100); 
