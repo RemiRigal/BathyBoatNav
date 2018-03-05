@@ -33,7 +33,7 @@ def convert(latitude, longitude):
 def readFile():
 	global name_mission_file
 
-	path = "/home/Helios/Missions/" + name_mission_file
+	path = "/home/helios/Helios/Missions/" + name_mission_file
 	print(path)
 	if os.path.isfile(path):
 		with open(path, "r") as jsonFile:
@@ -108,19 +108,17 @@ def sendPointService(req):
 
 def newMission(req):
 	global name_mission_file
-	name_mission_file = req['message']
+	res = {}
+	name_mission_file = req.message
 
 	res['success'] = readFile()
 
 	ready = True
 
-	ROS_INFO("Mission parsed");
-
 	rospy.wait_for_service('/changeStateSrv')
 	try:
 		changeStateSrv = rospy.ServiceProxy('/changeStateSrv', message)
-		resp1 = changeStateSrv("PAUSED")
-		return resp1.sum
+		resp1 = changeStateSrv("PAUSE")
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 
