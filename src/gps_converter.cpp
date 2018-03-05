@@ -64,7 +64,7 @@ BathyBoatNav::gps_conversion::Response Converter::Lambert_to_latlong(double x, d
 	pj_transform(pj_lambert, pj_latlong, 1, 1, &x, &y, NULL );
 	x *= RAD_TO_DEG;
 	y *= RAD_TO_DEG;
-	printf("lng: %lf \nlat: %lf\n", x, y);
+	//printf("lng: %lf \nlat: %lf\n", x, y);
 	res.converted_x = x;
 	res.converted_y = y;
 	return res;
@@ -90,7 +90,7 @@ BathyBoatNav::gps_conversion::Response Converter::Latlong_to_lambert(double x, d
 	x *= DEG_TO_RAD;
 	y *= DEG_TO_RAD;
 	pj_transform(pj_latlong, pj_lambert, 1, 1, &x, &y, NULL );
-	printf("X: %lf \nY: %lf\n", x, y);
+	//printf("X: %lf \nY: %lf\n", x, y);
 	res.converted_x = x;
 	res.converted_y = y;
 	return res;

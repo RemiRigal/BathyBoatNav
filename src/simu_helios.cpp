@@ -56,8 +56,8 @@ void evol()
 {
     if(state == RUNNING)
     {
-        x[0]    += speed*dt*cos(yaw);
-        x[1]    += speed*dt*sin(yaw);
+        x[1]    += speed*dt*cos(yaw);
+        x[0]    += speed*dt*sin(yaw);
 
         yaw     += dt*u_yaw;
         speed   += dt*u_speed;

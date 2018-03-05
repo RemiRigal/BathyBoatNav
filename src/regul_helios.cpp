@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 
     n.param<double>("Accept_dist", dist_max, 10.0);
     n.param<double>("P", k_P, 0.5);
-    n.param<double>("I", k_I, 0.5);
+    n.param<double>("I", k_I, 0.01);
     n.param<double>("Dead_zone", dead_zone, 0.05);
     n.param<double>("Full_left", full_left, 2.5);
     n.param<bool>("Simu", isSimulation, true);

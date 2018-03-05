@@ -121,8 +121,8 @@ void send_to ()
 
 		if(convert_coord_client.call(convert_coord_msg))
 		{                
-			latitude = convert_coord_msg.response.converted_x;
-			longitude = convert_coord_msg.response.converted_y;
+			latitude = convert_coord_msg.response.converted_y;
+			longitude = convert_coord_msg.response.converted_x;
 		} else {
 			ROS_WARN("Call to gps converter failed");
 		}
