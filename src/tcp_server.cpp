@@ -17,6 +17,7 @@
 #include "geometry_msgs/Vector3Stamped.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Int64.h"
+#include "std_msgs/Int16.h"
 #include "std_msgs/Float64.h"
 
 #include "BathyBoatNav/message.h"
@@ -275,6 +276,11 @@ void rightCallback(const std_msgs::Int64::ConstPtr& msg)
     right_mot = msg->data;
 }
 
+void stateCallback(const std_msgs::Int16::ConstPtr& msg)
+{
+    state = State(msg->data);
+}
+
 	// Main
 
 int main(int argc, char *argv [])
@@ -311,6 +317,7 @@ int main(int argc, char *argv [])
     ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
     ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
     ros::Subscriber right_sub 	= n.subscribe("right_mot", 1000, rightCallback);
+    ros::Subscriber state_sub 	= n.subscribe("/current_state", 1000, stateCallback);
 
 
 	printf("Starting server\n");
