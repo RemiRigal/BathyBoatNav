@@ -2,6 +2,8 @@
 
     <group ns="boat">
 
+        <param name="Simu" type="bool" value="true"/>
+
         <node name="fsm_manager" pkg="BathyBoatNav" type="fsm" output="screen"/>
        
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen"/>
@@ -11,10 +13,9 @@
         <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
 
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen">
-            <param name="Full_left"     type="double"   value="2.5"/>
-            <param name="Dead_zone"     type="double"   value="0.05"/>
-            <param name="Accept_gap"    type="double"   value="5.0"/>
-            <param name="Simu"          type="bool"     value="true"/>
+            <param name="Full_left" type="double" value="2.5"/>
+            <param name="Dead_zone" type="double" value="0.05"/>
+            <param name="Accept_gap" type="double" value="5.0"/>
             <param name="P" type="double" value="0.5"/>
             <param name="I" type="double" value="0.0"/>
         </node>
@@ -24,9 +25,9 @@
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 0" output="screen" />
 
         <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
-            <param name="Path"          type="string"   value="/dev/pololu"/>
-            <param name="Cons_channel"  type="string"   value="cons_boat"/>
-            <param name="Turn_gap"      type="int"      value="1000"/>
+            <param name="Path" type="string" value="/dev/pololu"/>
+            <param name="Cons_channel" type="string" value="cons_boat"/>
+            <param name="Turn_gap" type="int" value="1000"/>
         </node>
 
     </group>

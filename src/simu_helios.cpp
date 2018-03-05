@@ -38,7 +38,7 @@ void stateCallback(const std_msgs::Int16::ConstPtr& msg)
 void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     u_yaw   = msg->angular.z;
-    u_speed = 0;
+    speed = msg->linear.x;
 }
 
 bool offsetCallback(BathyBoatNav::offset_simu::Request &req, BathyBoatNav::offset_simu::Response &res)
@@ -60,7 +60,6 @@ void evol()
         x[0]    += speed*dt*sin(yaw);
 
         yaw     += dt*u_yaw;
-        speed   += dt*u_speed;
     }
 }
 
@@ -117,7 +116,7 @@ int main(int argc, char** argv)
 
     // Subscriber
     
-    ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, chatCallback);
+    ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, consCallback);
     ros::Subscriber state_sub = n.subscribe("current_state", 1000, stateCallback);
 
     // Offset service
