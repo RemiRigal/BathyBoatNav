@@ -12,7 +12,7 @@
 #include "ros/ros.h"
 #include "std_srvs/Trigger.h"
 #include "std_msgs/Int16.h"
-#include "BathyBoatNav/String.h"
+#include "BathyBoatNav/message.h"
 #include "BathyBoatNav/new_state.h"
 
 #include "../include/state.h"
@@ -41,7 +41,7 @@ class FSM{
 		
 		State state;
 
-		bool changeState(BathyBoatNav::String::Request &req, BathyBoatNav::String::Response &res);
+		bool changeState(BathyBoatNav::message::Request &req, BathyBoatNav::message::Response &res);
 		void setState(State newState);
 		bool advertChangeState();
 };

@@ -8,7 +8,7 @@
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/Twist.h"
-#include "BathyBoatNav/String.h"
+#include "BathyBoatNav/message.h"
 #include "BathyBoatNav/next_goal.h"
 #include "BathyBoatNav/new_state.h"
 #include "BathyBoatNav/offset_simu.h"
@@ -131,8 +131,8 @@ int main(int argc, char** argv)
     ros::ServiceClient offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
     BathyBoatNav::offset_simu offset_msg;
 
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::String>("/changeStateSrv");
-    BathyBoatNav::String change_state_msg;
+    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("/changeStateSrv");
+    BathyBoatNav::message change_state_msg;
 
     ros::ServiceServer state_srv = n.advertiseService("/regul_state", stateCallback);
 

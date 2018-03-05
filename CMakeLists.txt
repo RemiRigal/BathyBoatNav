@@ -69,7 +69,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
   next_goal.srv
-  String.srv
+  message.srv
   gps_conversion.srv
   new_state.srv
   offset_simu.srv

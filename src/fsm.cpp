@@ -37,7 +37,7 @@ void FSM::RunContinuously()
 	}
 }
 
-bool FSM::changeState(BathyBoatNav::String::Request &req, BathyBoatNav::String::Response &res)
+bool FSM::changeState(BathyBoatNav::message::Request &req, BathyBoatNav::message::Response &res)
 {
 	if(state == EMERGENCY)
 	{

@@ -19,7 +19,7 @@
 #include "std_msgs/Int64.h"
 #include "std_msgs/Float64.h"
 
-#include "BathyBoatNav/String.h"
+#include "BathyBoatNav/message.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -121,11 +121,11 @@ void rec_from ()
     ros::Publisher speed_pub = n.advertise<std_msgs::Float64>("/speed_hat", 1000);
     std_msgs::Float64 speed_msg;
 
-	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::String>("/new_mission");
-    BathyBoatNav::String mission_path_msg;
+	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::message>("/new_mission");
+    BathyBoatNav::message mission_path_msg;
 
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::String>("/changeStateSrv");
-    BathyBoatNav::String change_state_msg;
+    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("/changeStateSrv");
+    BathyBoatNav::message change_state_msg;
 
 	while(ros::ok())
 	{
