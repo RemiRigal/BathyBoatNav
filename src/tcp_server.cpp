@@ -76,7 +76,7 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$BATT;%lf;%d;%d\n",ros::Time::now().toSec(), (rand() % 101), (rand() % 101));
+		sprintf(buffer,"$BATT;%lf;%d;%d\n",ros::Time::now().toSec(), (rand() % 101)/100, (rand() % 101)/100);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -101,7 +101,7 @@ void send_to ()
 		}
 
 		ros::spinOnce();
-        loop_rate.sleep();
+        	loop_rate.sleep();
 	}
 }
 
@@ -140,9 +140,17 @@ void rec_from ()
 			
 			rcv_msg.append(c);
 		} while((int)c[0] != 0);
-
+		
+		ROS_INFO("Msg received : %s", rcv_msg.c_str());
 		boost::split(split_msg, rcv_msg, boost::is_any_of("|"));
 
+		ROS_INFO("Length of vector : %d", split_msg.size());
+		
+		for(int i = 0; i<split_msg.size(); i++)
+		{
+			ROS_INFO("String at %d : %s", i, split_msg[i].c_str());
+		}
+		
 		if(split_msg[0] == "MISSION")
 		{
 			mission_path_msg.request.message = split_msg[1];
