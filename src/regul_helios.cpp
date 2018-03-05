@@ -162,11 +162,9 @@ int main(int argc, char** argv)
             
                         if(change_state_client.call(change_state_msg))
                         {                
-                            if(change_state_msg.response.success)
+                            if(!change_state_msg.response.success)
                             {
-                                ROS_INFO("State changed");
-                            } else {
-                                ROS_WARN("Failed to change state to IDLE.");
+                                ROS_WARN("Failed to change state to IDLE from regulator.");
                             }
                         } else {
                             ROS_WARN("Call to fsm failed");
@@ -194,8 +192,11 @@ int main(int argc, char** argv)
 
                     init = false;
                     num_waypoints ++;
+
+                    ROS_INFO("Target -> %s | (%lf, %lf)", isRadiale ? "Radiale" : "Waypoints", x_target, y_target);
+
                 } else{
-                    ROS_ERROR("Failed to call service");
+                    ROS_ERROR("Failed to call next goal service");
                 }
             }
 

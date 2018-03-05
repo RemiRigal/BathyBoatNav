@@ -170,10 +170,8 @@ void rec_from ()
 			
 			if(change_state_client.call(change_state_msg))
 			{                
-				if(change_state_msg.response.success)
+				if(!change_state_msg.response.success)
 				{
-					ROS_INFO("State changed");
-				} else {
 					ROS_WARN("Failed to change state. Msg was %s", split_msg[1].c_str());
 				}
 			} else {

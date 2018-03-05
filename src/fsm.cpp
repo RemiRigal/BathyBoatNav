@@ -62,13 +62,15 @@ bool FSM::changeState(BathyBoatNav::message::Request &req, BathyBoatNav::message
 		FSM::setState(PAUSE);
 	} else if (split_msg[0] == "RTL") {
 		FSM::setState(RTL);
+	} else if (split_msg[0] == "STOP") {
+		FSM::setState(IDLE);
 	} else if (split_msg[0] == "EMERGENCY") {
 		FSM::setState(EMERGENCY);
 	} else {
 		res.success = false;
 	}
 
-    ROS_INFO("Message received : %s", msg.c_str());
+    //ROS_INFO("Message received : %s", msg.c_str());
 
     return true;
 }
