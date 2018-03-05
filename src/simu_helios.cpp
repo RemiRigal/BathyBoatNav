@@ -35,9 +35,9 @@ void stateCallback(const std_msgs::Int16::ConstPtr& msg)
     state = State(msg->data);
 }
 
-void chatCallback(const geometry_msgs::Twist::ConstPtr& msg)
+void consCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
-    u_yaw   = msg->angular.z;
+    u_yaw = msg->angular.z;
     speed = msg->linear.x;
 }
 

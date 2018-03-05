@@ -20,6 +20,19 @@ class Target{
     
 	private: 
 		ros::NodeHandle Handle;
+
+		ros::Publisher state_pub;
+		std_msgs::Int16 state_msg;
+		
+	    ros::ServiceClient next_target_client;
+	    BathyBoatNav::next_goal next_target_msg;
+
+		ros::ServiceServer changeStateSrv;
+		
+		ros::ServiceClient pololuLeader;
+
+		void computeDistance();
+
 };
 
 #endif
