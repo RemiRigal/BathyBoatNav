@@ -46,6 +46,9 @@ bool offsetCallback(BathyBoatNav::offset_simu::Request &req, BathyBoatNav::offse
     offset_x = req.x_lambert;
     offset_y = req.y_lambert;
 
+    x[0] = offset_x;
+    x[1] = offset_y;
+
     return true;
 }
 
