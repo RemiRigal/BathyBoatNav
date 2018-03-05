@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 
     // Next goal service
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
+    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("/next_goal");
     BathyBoatNav::next_goal next_goal_msg;
 
     
