@@ -102,23 +102,23 @@ int main(int argc, char** argv)
     
     // Boat marker
     
-    ros::Publisher mark_pub = n.advertise<visualization_msgs::Marker>("/mark_boat", 1000);
+    ros::Publisher mark_pub = n.advertise<visualization_msgs::Marker>("mark_boat", 1000);
     visualization_msgs::Marker msgs_boat;
 
     // Line marker
     
-    ros::Publisher mark_line = n.advertise<visualization_msgs::Marker>("/line_boat", 1000);
+    ros::Publisher mark_line = n.advertise<visualization_msgs::Marker>("line_boat", 1000);
     visualization_msgs::Marker msgs_line;
 
     // Publisher
     
-    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("/gps_angle_boat", 1000);
+    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("gps_angle_boat", 1000);
     geometry_msgs::Twist data_boat;
 
     // Subscriber
     
     ros::Subscriber cons_sub = n.subscribe("cons_boat", 1000, chatCallback);
-    ros::Subscriber state_sub = n.subscribe("/current_state", 1000, stateCallback);
+    ros::Subscriber state_sub = n.subscribe("current_state", 1000, stateCallback);
 
     // Offset service
 

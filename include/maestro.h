@@ -75,7 +75,6 @@ int maestroConnect(const char * device){
     {
         printf("Connection failed\n");
         perror(device);
-        return 1;
     }
     return fd;
 }

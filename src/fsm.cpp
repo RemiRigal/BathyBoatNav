@@ -4,21 +4,23 @@ using namespace std;
 
 FSM::FSM()
 {
-	state = IDLE;
+	FSM::setState(IDLE);
 
-	state_pub = Handle.advertise<std_msgs::Int16>("/current_state", 1000);
+	state_pub = Handle.advertise<std_msgs::Int16>("current_state", 1000);
 
-	changeStateSrv = Handle.advertiseService("/changeStateSrv", &FSM::changeState, this);
+	changeStateSrv = Handle.advertiseService("changeStateSrv", &FSM::changeState, this);
 
-	pololuLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("/pololu_state");
-	regulLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("/regul_state");
-	missionReady 	= Handle.serviceClient<std_srvs::Trigger>("/mission_ready");
+	pololuLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("pololu_state");
+	regulLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("regul_state");
+	missionReady 	= Handle.serviceClient<std_srvs::Trigger>("mission_ready");
 
 	while(!FSM::advertChangeState())
 	{
 		ROS_INFO("Trying to call nodes");
 		sleep(1);
 	}
+
+	ROS_INFO("Initial state set");
 }
 
 FSM::~FSM()
@@ -70,8 +72,6 @@ bool FSM::changeState(BathyBoatNav::message::Request &req, BathyBoatNav::message
 		res.success = false;
 	}
 
-    //ROS_INFO("Message received : %s", msg.c_str());
-
     return true;
 }
 
@@ -94,7 +94,7 @@ bool FSM::advertChangeState()
 	bool regul = false;
 
 	new_state_msg.request.state = state;
-
+	
 	if (pololuLeader.call(new_state_msg))
 	{
 		pololu = true;
