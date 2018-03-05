@@ -118,7 +118,14 @@ def newMission(req):
 	rospy.wait_for_service('changeStateSrv')
 	try:
 		changeStateSrv = rospy.ServiceProxy('changeStateSrv', message)
-		resp1 = changeStateSrv("PAUSE")
+		res = changeStateSrv("PAUSE")
+	except rospy.ServiceException, e:
+		print "Service call failed: %s"%e
+
+	rospy.wait_for_service('triggerAskForTarget')
+	try:
+		triggerAskForTarget = rospy.ServiceProxy('triggerAskForTarget', Trigger)
+		res = triggerAskForTarget()
 	except rospy.ServiceException, e:
 		print "Service call failed: %s"%e
 

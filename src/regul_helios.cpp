@@ -5,6 +5,7 @@
 #include "ros/ros.h"
 
 #include "std_msgs/Float64.h"
+#include "std_srvs/Trigger.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/Twist.h"
@@ -28,7 +29,7 @@ double P, I;
 double y_target, x_target;
 double y_target_start_line, x_target_start_line;
 bool isRadiale;
-int still_n_mission;
+int id, still_n_mission, num_waypoints;
 
 double x_boat, y_boat, speed;
 double roll, pitch, yaw_boat, yaw_radiale;
@@ -40,7 +41,80 @@ double u_speed;
 
 double dist;
 
+bool isSimulation;
+
 State state;
+
+ros::ServiceClient next_goal_client;
+BathyBoatNav::next_goal next_goal_msg;
+
+ros::ServiceClient offset_client;
+BathyBoatNav::offset_simu offset_msg;
+
+ros::ServiceClient change_state_client;
+BathyBoatNav::message change_state_msg;
+
+void callForNextTarget(bool init)
+{
+    if (next_goal_client.call(next_goal_msg))
+    {
+        if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
+        {
+            isRadiale       = next_goal_msg.response.isRadiale;
+            x_target        = next_goal_msg.response.latitude[0];
+            y_target        = next_goal_msg.response.longitude[0];
+            id              = next_goal_msg.response.id;
+            still_n_mission = next_goal_msg.response.remainingMissions;
+
+            if(isRadiale)
+            {
+                x_target_start_line = next_goal_msg.response.latitude[1];
+                y_target_start_line = next_goal_msg.response.longitude[1];
+                
+                yaw_radiale = atan2(x_target - x_target_start_line, y_target - y_target_start_line);
+            }
+
+        } else {
+            change_state_msg.request.message = "IDLE";
+
+            if(change_state_client.call(change_state_msg))
+            {                
+                if(!change_state_msg.response.success)
+                {
+                    ROS_WARN("Failed to change state to IDLE from regulator.");
+                }
+            } else {
+                ROS_WARN("Call to fsm failed");
+            }
+        }
+        
+        if(isSimulation && init)
+        {
+            if(isRadiale)
+            {
+                offset_msg.request.x_lambert = x_target_start_line;
+                offset_msg.request.y_lambert = y_target_start_line;
+            } else {
+                offset_msg.request.x_lambert = x_target;
+                offset_msg.request.y_lambert = y_target;
+            }
+            
+            if (offset_client.call(offset_msg))
+            {
+                ROS_INFO("Offset given");
+            } else{
+                ROS_ERROR("Failed to call simu node");
+            }
+        }
+
+        num_waypoints ++;
+
+        ROS_INFO("Target -> %s | (%lf, %lf)", isRadiale ? "Radiale" : "Waypoints", x_target, y_target);
+
+    } else{
+        ROS_ERROR("Failed to call next goal service");
+    }
+}
 
 void computeDistance()
 {
@@ -89,9 +163,20 @@ bool pidCallback(BathyBoatNav::pid_coeff::Request &req, BathyBoatNav::pid_coeff:
     return true;
 }
 
+bool initTargetCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res)
+{
+    callForNextTarget(true);
+
+    res.success = true;
+    ROS_INFO("Init mission done for regulator");
+
+    return true;
+}
+
+
 int main(int argc, char** argv)
 {
-    int num_waypoints = 1;
+    num_waypoints = 0;
     double e;
     double dead_zone;
     double full_left;
@@ -100,7 +185,6 @@ int main(int argc, char** argv)
     double dist_line = 0.0;
 
     bool init = true;
-    bool isSimulation;
 
     u_yaw = 0;
     u_speed = 0;
@@ -139,18 +223,17 @@ int main(int argc, char** argv)
 
     // Services
 
-    ros::ServiceClient next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
-    BathyBoatNav::next_goal next_goal_msg;
-    
-    ros::ServiceClient offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
-    BathyBoatNav::offset_simu offset_msg;
+    next_goal_client = n.serviceClient<BathyBoatNav::next_goal>("next_goal");
 
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
-    BathyBoatNav::message change_state_msg;
+    offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
+
+    change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
 
     ros::ServiceServer state_srv = n.advertiseService("regul_state", stateCallback);
 
     ros::ServiceServer pid_srv = n.advertiseService("PID_coeff", pidCallback);
+
+    ros::ServiceServer initTarget_srv = n.advertiseService("triggerAskForTarget", initTargetCallback);
 
     while(ros::ok())
     {
@@ -160,62 +243,7 @@ int main(int argc, char** argv)
 
             if(dist < dist_max || init)
             {
-                if (next_goal_client.call(next_goal_msg))
-                {
-                    if( (int)sizeof(next_goal_msg.response.latitude) != 0 )
-                    {
-                        isRadiale       = next_goal_msg.response.isRadiale;
-                        x_target        = next_goal_msg.response.latitude[0];
-                        y_target        = next_goal_msg.response.longitude[0];
-                        still_n_mission = next_goal_msg.response.remainingMissions;
-                        if(isRadiale)
-                        {
-                            x_target_start_line = next_goal_msg.response.latitude[1];
-                            y_target_start_line = next_goal_msg.response.longitude[1];
-                            
-                            yaw_radiale = atan2(x_target - x_target_start_line, y_target - y_target_start_line);
-                        }
-                    } else {
-                        change_state_msg.request.message = "IDLE";
-            
-                        if(change_state_client.call(change_state_msg))
-                        {                
-                            if(!change_state_msg.response.success)
-                            {
-                                ROS_WARN("Failed to change state to IDLE from regulator.");
-                            }
-                        } else {
-                            ROS_WARN("Call to fsm failed");
-                        }
-                    }
-                    
-                    if(init && isSimulation)
-                    {
-                        if(isRadiale)
-                        {
-                            offset_msg.request.x_lambert = x_target_start_line;
-                            offset_msg.request.y_lambert = y_target_start_line;
-                        } else {
-                            offset_msg.request.x_lambert = x_target;
-                            offset_msg.request.y_lambert = y_target;
-                        }
-                        
-                        if (offset_client.call(offset_msg))
-                        {
-                            ROS_INFO("Offset given");
-                        } else{
-                            ROS_ERROR("Failed to call simu node");
-                        }
-                    }
-
-                    init = false;
-                    num_waypoints ++;
-
-                    ROS_INFO("Target -> %s | (%lf, %lf)", isRadiale ? "Radiale" : "Waypoints", x_target, y_target);
-
-                } else{
-                    ROS_ERROR("Failed to call next goal service");
-                }
+                callForNextTarget(false);
             }
 
             if(isRadiale)
