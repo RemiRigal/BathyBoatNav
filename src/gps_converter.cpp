@@ -19,14 +19,14 @@ Converter::~Converter()
 {}
 
 
-void Converter::convert2LambertCallback(sensor_msgs::NavSatFix::ConstPtr& msg)
+void Converter::convert2LambertCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
 {
 	BathyBoatNav::gps_conversion::Response res = this->Latlong_to_lambert(msg->latitude, msg->latitude);
 	pose.linear.x = res.converted_x;
 	pose.linear.y = res.converted_y;
 }
 
-void Converter::angleCallback(geometry_msgs::Vector3Stamped::ConstPtr& msg)
+void Converter::angleCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
 {
 	pose.linear.z = msg->vector.z ;
 }

@@ -27,8 +27,8 @@ private:
     std::string input_yaw_msg;
     std::string output_msg;
 
-    void convert2LambertCallback(sensor_msgs::NavSatFix::ConstPtr& msg);
-    void angleCallback(geometry_msgs::Vector3Stamped::ConstPtr& msg);
+    void convert2LambertCallback(const sensor_msgs::NavSatFix::ConstPtr& msg);
+    void angleCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
 public:
     Converter();
