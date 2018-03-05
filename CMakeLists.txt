@@ -161,8 +161,7 @@ add_executable(simu_helios 	      src/simu_helios.cpp)
 
 add_executable(fsm src/fsm.cpp)
 
-#add_executable(mission_interpreter src/mission_interpreter.cpp)
-#add_executable(gps_converter   src/gps_converter.cpp)
+add_executable(gps_converter   src/gps_converter.cpp)
 
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -194,10 +193,10 @@ target_link_libraries(simu_helios
   ${catkin_LIBRARIES}
 )
 
-#target_link_libraries(gps_converter
-#  proj
-#  ${catkin_LIBRARIES}
-#)
+target_link_libraries(gps_converter
+  proj
+  ${catkin_LIBRARIES}
+)
 
 target_link_libraries(fsm
   ${catkin_LIBRARIES}

@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
     // Subscriber
 
-    ros::Subscriber data_sub   = n.subscribe("gps_angle_boat",   1000, posCallback);
+    ros::Subscriber data_sub   = n.subscribe("/gps_angle_boat",   1000, posCallback);
     ros::Subscriber speed_sub   = n.subscribe("/speed_hat",   1000, speedCallback);
 
     // Publisher

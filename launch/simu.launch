@@ -7,7 +7,9 @@
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen"/>
 
         <node name="simu_helios" pkg="BathyBoatNav" type="simu_helios" output="screen"/>
-        
+       
+        <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
+
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen">
             <param name="Name_boat"     type="string"   value="helios"/>
             <param name="Full_left"     type="double"   value="2.5"/>

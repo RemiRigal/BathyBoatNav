@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
     // Publisher
     
-    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("gps_angle_boat", 1000);
+    ros::Publisher rens_pub = n.advertise<geometry_msgs::Twist>("/gps_angle_boat", 1000);
     geometry_msgs::Twist data_boat;
 
     // Subscriber
