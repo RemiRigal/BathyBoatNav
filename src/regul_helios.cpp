@@ -184,8 +184,6 @@ int main(int argc, char** argv)
     double k_I, k_P;
     double dist_line = 0.0;
 
-    bool init = true;
-
     u_yaw = 0;
     u_speed = 0;
 
@@ -241,7 +239,7 @@ int main(int argc, char** argv)
         {
             computeDistance();
 
-            if(dist < dist_max || init)
+            if(dist < dist_max)
             {
                 callForNextTarget(false);
             }
