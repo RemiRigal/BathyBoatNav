@@ -115,6 +115,9 @@ def newMission(req):
 
 	ready = True
 
+	changeState()
+	triggeringTarget()
+
 	return res
 
 def changeState():
