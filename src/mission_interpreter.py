@@ -33,6 +33,13 @@ def convert(latitude, longitude):
 def readFile():
 	global name_mission_file
 
+	ids = defaultdict(list)
+	latitudes = defaultdict(list)
+	longitudes = defaultdict(list)
+	missions = defaultdict(list)
+	nbrMissions = 0
+	nbrMissionsSent = 0
+
 	path = "/home/helios/Helios/Missions/" + name_mission_file
 	print(path)
 	if os.path.isfile(path):
@@ -72,7 +79,6 @@ def readFile():
 					nbrMissions += 1
 			else:
 				badJson = True	
-	
 			if badJson:
 				rospy.logerr("Wrong conventions Json mission file")
 				return False
@@ -86,8 +92,9 @@ def sendPointService(req):
 	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
 	res = {}
 	res["longitude"] = [] 
-  	res["latitude"] = [] 
-	if nbrMissionsSent < nbrMissions and longitudes[nbrMissionsSent]:
+  	res["latitude"] = []
+
+	if nbrMissionsSent < nbrMissions and len(longitudes[nbrMissionsSent]) > 0:
 		res["isRadiale"] = missions[nbrMissionsSent]
 		if not missions[nbrMissionsSent]:
 			res["longitude"].append(longitudes[nbrMissionsSent].pop(0))
@@ -98,12 +105,11 @@ def sendPointService(req):
 			res["longitude"].append(longitudes[nbrMissionsSent].pop(0))
 			res["latitude"].append(latitudes[nbrMissionsSent].pop(0))
 		
-		if not longitudes[nbrMissionsSent]:
-			nbrMissionsSent += 1
-			
 		res["id"] = ids[nbrMissionsSent].pop(0) 
+		if not longitudes[nbrMissionsSent]:
+			nbrMissionsSent += 1			
+		
 		res["remainingMissions"] = nbrMissions - nbrMissionsSent
-
 	return res
 
 def newMission(req):
@@ -118,16 +124,16 @@ def newMission(req):
 	rospy.wait_for_service('changeStateSrv')
 	try:
 		changeStateSrv = rospy.ServiceProxy('changeStateSrv', message)
-		res = changeStateSrv("PAUSE")
+		res_change_state = changeStateSrv("PAUSE")
 	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
+		print "Service call failed for changing state : %s"%e
 
 	rospy.wait_for_service('triggerAskForTarget')
 	try:
 		triggerAskForTarget = rospy.ServiceProxy('triggerAskForTarget', Trigger)
-		res = triggerAskForTarget()
+		res_trigger = triggerAskForTarget()
 	except rospy.ServiceException, e:
-		print "Service call failed: %s"%e
+		print "Service call failed for triggering new target: %s"%e	
 
 	return res
 
