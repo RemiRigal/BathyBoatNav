@@ -1,0 +1,26 @@
+### Required ###
+webServer:
+    port: 29201
+    rosIP: 127.0.0.1
+missions:
+    path: /home/lallemfa/BathyBoatMissions/
+    name: Mission_Brest_{DATE}_{TIME}.json
+tcp:
+    dataPort: 29200
+    commandPort: 22300
+target:
+    accept_dist: 2.0
+    
+### Optional ###
+map:
+    initialPosition:
+        lat: 48.395497
+        lng: -4.390246
+camera: 
+    enable: true
+    streamPort: 8081
+    webSocketPort: 8082
+    record:
+        enable: true
+        path: /home/helios/Helios/Recordings/
+        name: Record_Brest_{DATE}_{TIME}.ts

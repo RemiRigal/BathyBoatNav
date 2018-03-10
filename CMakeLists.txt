@@ -62,6 +62,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
+  pid_factors.msg
   robot_state.msg
   robot_target.msg
 )

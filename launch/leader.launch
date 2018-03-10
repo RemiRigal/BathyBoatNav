@@ -1,0 +1,11 @@
+<launch>
+
+    <rosparam file="$(find BathyBoatNav)/config/config.yaml" command="load"/>
+
+    <group ns="helios">
+        <node name="leader" pkg="BathyBoatNav" type="leader" output="screen" />
+
+        <node name="mission_parser" pkg="BathyBoatNav" type="mission_parser.py" output="screen" />
+    </group>
+    
+</launch>

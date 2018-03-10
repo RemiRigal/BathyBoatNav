@@ -4,19 +4,20 @@
 echo GPS to tcp
 sudo socat -u /dev/gps,b9600,raw,echo=0 tcp-listen:4001,reuseaddr,fork &
 pid_socat1=$!
-
+echo $pid_socat1
 sleep 1
 
 echo tcp to SBG
 sudo socat -u tcp:localhost:4001 /dev/sbg_aux,b9600,raw,echo=0 &
 pid_socat2=$!
-
+echo $pid_socat2
 sleep 1
 
 echo RTK to GPS
-sudo socat -u tcp:192.168.0.187:5017 /dev/gps,b9600,raw,echo=0 &
+sudo socat -u tcp:192.168.0.250:5555 /dev/gps,b9600,raw,echo=0 &
 
 pid_socat3=$!
+echo $pid_socat3
 
 sleep 1
 

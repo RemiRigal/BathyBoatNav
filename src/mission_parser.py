@@ -39,7 +39,7 @@ def readFile():
 	nbrMissions = 0
 	nbrMissionsSent = 0
 
-	path = "/home/helios/Helios/Missions/" + name_mission_file
+	path = mission_folder + name_mission_file
 	print(path)
 	if os.path.isfile(path):
 		with open(path, "r") as jsonFile:
@@ -118,20 +118,6 @@ def newMission(req):
 
 	res['success'] = readFile()
 
-	rospy.wait_for_service('changeStateSrv')
-	try:
-		changeStateSrv = rospy.ServiceProxy('changeStateSrv', message)
-		res_change_state = changeStateSrv("PAUSE")
-	except rospy.ServiceException, e:
-		print "Service call failed for changing state : %s"%e
-
-	rospy.wait_for_service('triggerAskForTarget')
-	try:
-		triggerAskForTarget = rospy.ServiceProxy('triggerAskForTarget', Trigger)
-		res_trigger = triggerAskForTarget()
-	except rospy.ServiceException, e:
-		print "Service call failed for triggering new target: %s"%e	
-
 	return res
 
 if __name__ == "__main__":
@@ -141,7 +127,7 @@ if __name__ == "__main__":
 
 	print("Path : {}".format(mission_folder))
 
-	goal_srv 	= rospy.Service('next_goal', next_goal, sendPointService)
+	goal_srv 	= rospy.Service('/next_goal', next_goal, sendPointService)
 	mission_srv = rospy.Service('/new_mission', message, newMission)
 
 	rospy.spin()

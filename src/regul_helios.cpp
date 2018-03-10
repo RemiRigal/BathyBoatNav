@@ -199,7 +199,7 @@ int main(int argc, char** argv)
 
     // Initials parameters
 
-    n.param<double>("Accept_dist", dist_max, 10.0);
+    n.param<double>("Accept_dist", dist_max, 2.0);
     n.param<double>("P", k_P, 0.5);
     n.param<double>("I", k_I, 0.01);
     n.param<double>("Dead_zone", dead_zone, 0.0);

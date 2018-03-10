@@ -15,7 +15,10 @@
 
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
         <node name="convert2Lambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen" />
-        
+
+<!--
+        <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
+-->
         <!-- Args server : Port (int) | Sender (int) 1 is send 0 if read -->
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 1" output="screen" />
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 0" output="screen" />
