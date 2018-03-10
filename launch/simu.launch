@@ -12,10 +12,11 @@
        
         <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
 
+
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen">
             <param name="Full_left" type="double" value="2.5"/>
             <param name="Dead_zone" type="double" value="0.05"/>
-            <param name="Accept_gap" type="double" value="5.0"/>
+            <param name="Accept_gap" type="double" value="2.0"/>
             <param name="P" type="double" value="0.5"/>
             <param name="I" type="double" value="0.0"/>
         </node>

@@ -24,6 +24,7 @@ using namespace std;
 
 double yaw_bar, speed_bar;
 
+double k_I, k_P;
 double P, I;
 
 double y_target, x_target;
@@ -156,8 +157,8 @@ bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_stat
 bool pidCallback(BathyBoatNav::pid_coeff::Request &req, BathyBoatNav::pid_coeff::Response &res)
 {
 
-    P = req.k_P;
-    I = req.k_I;
+    k_P = req.k_P;
+    k_I = req.k_I;
     res.success = true;
 
     return true;
@@ -181,7 +182,7 @@ int main(int argc, char** argv)
     double dead_zone;
     double full_left;
     double det = 0.0;
-    double k_I, k_P;
+    
     double dist_line = 0.0;
 
     u_yaw = 0;
@@ -198,10 +199,10 @@ int main(int argc, char** argv)
 
     // Initials parameters
 
-    n.param<double>("Accept_dist", dist_max, 10.0);
+    n.param<double>("Accept_dist", dist_max, 2.0);
     n.param<double>("P", k_P, 0.5);
     n.param<double>("I", k_I, 0.01);
-    n.param<double>("Dead_zone", dead_zone, 0.05);
+    n.param<double>("Dead_zone", dead_zone, 0.0);
     n.param<double>("Full_left", full_left, 2.5);
     n.param<bool>("Simu", isSimulation, false);
 
@@ -261,8 +262,8 @@ int main(int argc, char** argv)
                 u_yaw = 0.8;
             } else {
                 P = k_P*e;
-                I += k_I*e;
-                u_yaw = abs(P + I) >= 1 ? 1 : (P + I);
+                I += e;
+                u_yaw = abs(P + k_I*I) >= 1 ? (abs(P + k_I*I)/(P + k_I*I))*1 : (P + k_I*I);
             }
 
             // Speed regulation
@@ -272,12 +273,12 @@ int main(int argc, char** argv)
 
             cons_pub.publish(cons_msgs);
 
-            debug_msgs.linear.x = isRadiale;
-            debug_msgs.linear.y = yaw_radiale;
-            debug_msgs.linear.z = dist_line;
-            debug_msgs.angular.x = yaw_bar;
-            debug_msgs.angular.y = e;
-            debug_msgs.angular.z = num_waypoints;
+            debug_msgs.linear.x = x_target;
+            debug_msgs.linear.y = y_target;
+            debug_msgs.linear.z = yaw_bar;
+            debug_msgs.angular.x = x_boat;
+            debug_msgs.angular.y = y_boat;
+            debug_msgs.angular.z = yaw_boat;
 
             debug_pub.publish(debug_msgs);
         }

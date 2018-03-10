@@ -103,8 +103,8 @@ void send_to ()
 	ros::Rate loop_rate(10);
 	char buffer[500];
 
-	// ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
-	// ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
+	//ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
+	//ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
 
     ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
     ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);

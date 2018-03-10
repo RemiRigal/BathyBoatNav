@@ -14,9 +14,10 @@
     -->
 
         <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
-
+        <node name="convert2Lambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen" />
+<!--
         <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
-
+-->
         <!-- Args server : Port (int) | Sender (int) 1 is send 0 if read -->
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 1" output="screen" />
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 0" output="screen" />
@@ -25,7 +26,7 @@
         <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
             <param name="Path" type="string" value="/dev/pololu"/>
             <param name="Cons_channel" type="string" value="cons_boat"/>
-            <param name="Turn_gap" type="int" value="1000"/>
+            <param name="Turn_gap" type="int" value="500"/>
         </node>
         
         <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
