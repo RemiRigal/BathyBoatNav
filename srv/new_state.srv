@@ -1,3 +1,4 @@
-int16 state
+string state
 ---
+int16 state
 bool success

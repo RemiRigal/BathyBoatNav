@@ -76,17 +76,7 @@ void callForNextTarget(bool init)
             }
 
         } else {
-            change_state_msg.request.message = "IDLE";
-
-            if(change_state_client.call(change_state_msg))
-            {                
-                if(!change_state_msg.response.success)
-                {
-                    ROS_WARN("Failed to change state to IDLE from regulator.");
-                }
-            } else {
-                ROS_WARN("Call to fsm failed");
-            }
+            ROS_INFO("Will see.");
         }
         
         if(isSimulation && init)
@@ -139,21 +129,6 @@ void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
     speed = msg->twist.linear.x;
 }
 
-bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_state::Response &res)
-{
-    int idx_state = req.state;
-
-    if( idx_state <= 4 && idx_state >= 0 )
-    {
-        state = State(idx_state);
-        res.success = true;
-    } else {
-        res.success = false;
-    }
-
-    return true;
-}
-
 bool pidCallback(BathyBoatNav::pid_coeff::Request &req, BathyBoatNav::pid_coeff::Response &res)
 {
 
@@ -177,6 +152,8 @@ bool initTargetCallback(std_srvs::Trigger::Request &req, std_srvs::Trigger::Resp
 
 int main(int argc, char** argv)
 {
+    state = IDLE;
+
     num_waypoints = 0;
     double e;
     double dead_zone;
@@ -227,8 +204,6 @@ int main(int argc, char** argv)
     offset_client = n.serviceClient<BathyBoatNav::offset_simu>("offset_position");
 
     change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
-
-    ros::ServiceServer state_srv = n.advertiseService("regul_state", stateCallback);
 
     ros::ServiceServer pid_srv = n.advertiseService("PID_coeff", pidCallback);
 

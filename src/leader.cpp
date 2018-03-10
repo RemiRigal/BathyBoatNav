@@ -19,7 +19,7 @@ Leader::Leader()
 	serverInputs = Handle->advertiseService("/TCP_inputs", &Leader::parseCommand, this);
 
 	// Change state of FSM
-	changeStateSrv = Handle->serviceClient<BathyBoatNav::new_state>("changeStateSrv");
+	changeStateSrv = Handle->serviceClient<BathyBoatNav::new_state>("/changeStateSrv");
 
 	// New mission
 	mision_path_client = Handle->serviceClient<BathyBoatNav::message>("/new_mission");
@@ -33,10 +33,15 @@ Leader::~Leader()
 
 void Leader::RunContinuously()
 {
+	// Init state
+	Leader::setState("IDLE");
+
+	// Loop
 	ros::Rate loop_rate(25);
 	while(ros::ok())
 	{
 		// Leader::checkIfTargetValidated();
+		ROS_INFO("State %d", state);
 
 		Leader::updateRobotStateMsg();
 		Leader::updateRobotTargetMsg();
@@ -49,7 +54,7 @@ void Leader::RunContinuously()
 	}
 }
 
-bool Leader::setState(State state)
+bool Leader::setState(string state)
 {
 	new_state_msg.request.state = state;
 	if (changeStateSrv.call(new_state_msg))
@@ -59,7 +64,9 @@ bool Leader::setState(State state)
 			ROS_ERROR("FSM failed to change state");
 			return false;
 		}
-	} else{
+		ROS_INFO("Received %d", new_state_msg.response.state);
+		state = State(new_state_msg.response.state);
+	} else {
 		ROS_ERROR("Failed to call FSM");
 		return false;
 	}
@@ -71,6 +78,7 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 {
 	string msg = req.message;
 	vector<string> split_msg;
+	string key_msg;
 
 	bool error = true;
 
@@ -80,7 +88,8 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 
 	if(sizeVector != 0)
 	{
-		if(split_msg[0] == "MISSION")
+		key_msg = split_msg[0];
+		if(key_msg == "MISSION")
 		{
 			if(sizeVector == 2)
 			{
@@ -88,7 +97,7 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 			} else {
 				ROS_INFO("Mission message canvas is \"MISSION|name_of_mission.json\" but received \"%s\"", msg.c_str());
 			}
-		} else if(split_msg[0] == "FACTOR") {
+		} else if(key_msg == "FACTOR") {
 			if(sizeVector == 3)
 			{
 				Leader::changePID(atof(split_msg[1].c_str()), atof(split_msg[2].c_str()));
@@ -96,13 +105,20 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 			} else {
 				ROS_INFO("PID message canvas is \"FACTOR|k_I|k_P\" but received \"%s\"", msg.c_str());
 			}
-		} else if(split_msg[0] == "SPEED") {
+		} else if(key_msg == "SPEED") {
 			if(sizeVector == 3)
 			{
 				Leader::changeSpeed(atof(split_msg[1].c_str()));
 				error = false;
 			} else {
 				ROS_INFO("Speed message canvas is \"SPEED|coeffSPD\" but received \"%s\"", msg.c_str());
+			}
+		} else if( key_msg == "RESUME" || key_msg == "PAUSE" || key_msg == "RTL" || key_msg == "STOP" || key_msg == "EMERGENCY") {
+			if(sizeVector == 1)
+			{
+				error = ! Leader::setState(key_msg);
+			} else {
+				ROS_INFO("State message canvas is \"STATE\" but received \"%s\"", msg.c_str());
 			}
 		} else {
 			ROS_WARN("Received message %s but parsing give no meaning to it.", msg.c_str());

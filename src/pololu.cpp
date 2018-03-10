@@ -34,21 +34,6 @@ void init_servo(int fd)
 	sleep(2);
 }
 
-bool stateCallback(BathyBoatNav::new_state::Request &req, BathyBoatNav::new_state::Response &res)
-{
-    int idx_state = req.state;
-
-    if( idx_state <= 4 && idx_state >= 0 )
-    {
-        state = State(idx_state);
-        res.success = true;
-    } else {
-        res.success = false;
-    }
-
-    return true;
-}
-
 int main(int argc, char *argv [])
 {
 	int fd;
@@ -58,6 +43,8 @@ int main(int argc, char *argv [])
 	int gap;
 
 	bool isSimulation;
+
+	state = IDLE;
 
 	double left_mot, right_mot;
 	left_mot = 0;
@@ -99,10 +86,6 @@ int main(int argc, char *argv [])
 
 	ros::Publisher right_mot_pub = n.advertise<std_msgs::Int64>("right_mot", 1000);
     std_msgs::Int64 right_mot_msgs;
-
-	// State service
-
-    ros::ServiceServer state_srv = n.advertiseService("pololu_state", stateCallback);
 
 	while(ros::ok())
 	{

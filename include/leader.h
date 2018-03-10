@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <boost/algorithm/string.hpp>
 
 #include "ros/ros.h"
 
@@ -14,9 +15,8 @@
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
 
-#include <boost/algorithm/string.hpp> // Parsing strings
-
-#include "../include/state.h" // FSM states
+// FSM states
+#include "../include/state.h" 
 
 // Messages
 #include "BathyBoatNav/robot_state.h"
@@ -73,6 +73,7 @@ class Leader{
 		// Changing state
 		BathyBoatNav::new_state new_state_msg;
 		ros::ServiceClient changeStateSrv;
+		bool setState(std::string state);
 
 		// New mission
 		double accept_dist;
@@ -85,9 +86,7 @@ class Leader{
 		ros::ServiceClient next_goal_client;
 		void checkIfTargetValidated();
 		void askForNewWaypoints();
-
-		bool setState(State state);
-
+		
 		bool changeMission(std::string path);
 
 		void changePID(double P, double I);
