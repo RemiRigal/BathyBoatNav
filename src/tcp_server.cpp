@@ -12,6 +12,9 @@
 
 #include "ros/ros.h"
 
+#include "tf/tf.h"
+#include "tf2/LinearMath/Quaternion.h"
+
 #include "sensor_msgs/NavSatFix.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "geometry_msgs/Vector3Stamped.h"
@@ -20,6 +23,7 @@
 #include "std_msgs/Int16.h"
 #include "std_msgs/Float64.h"
 
+#include "BathyBoatNav/robot_state.h"
 #include "BathyBoatNav/message.h"
 #include "BathyBoatNav/gps_conversion.h"
 #include "BathyBoatNav/pid_coeff.h"
@@ -34,6 +38,8 @@ int socket_service;
 struct sockaddr_in adr;
 socklen_t lgadresse;
 
+int gps_status;
+
 string msg;
 
 int isSending;
@@ -42,6 +48,8 @@ int port;
 double x_lambert, y_lambert;
 double latitude, longitude, yaw, pitch, roll, vit, wifi_lvl;
 double u_yaw, u_throttle;
+
+double batt1, batt2, batt3;
 
 double left_mot, right_mot;
 
@@ -58,21 +66,25 @@ void signals_handler(int signal_number)
 	exit(1);
 }
 
-void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
+void robotStateCallback(const BathyBoatNav::robot_state::ConstPtr& msg)
 {
-    latitude 	= msg->latitude;
-    longitude 	= msg->longitude;
+	state = msg->state;
+	gps_status = msg->gps_status;
+
+	latitude 	= msg->pose.position.x;
+	longitude 	= msg->pose.position.y;
+
+	tf::Quaternion q(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w);
+	tf::Matrix3x3 m(q);
+	m.getRPY(roll, pitch, yaw);
+
+	vit = msg->speed.linear.x;
+
+	batt1 = msg->batteries.data[0];
+	batt2 = msg->batteries.data[1];
+	batt3 = msg->batteries.data[2];
 }
 
-void velCallback(const geometry_msgs::TwistStamped::ConstPtr& msg)
-{
-    vit = msg->twist.linear.x;
-}
-
-void yawCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
-{
-    yaw = msg->vector.z;
-}
 
 void leftCallback(const std_msgs::Int64::ConstPtr& msg)
 {
@@ -84,54 +96,20 @@ void rightCallback(const std_msgs::Int64::ConstPtr& msg)
     right_mot = msg->data;
 }
 
-void stateCallback(const std_msgs::Int16::ConstPtr& msg)
-{
-    state = State(msg->data);
-}
-/*
-void posCallback(const geometry_msgs::Twist::ConstPtr& msg)
-{
-    x_lambert 	= msg->linear.x;
-    y_lambert 	= msg->linear.y;
-    yaw 		= msg->angular.z;
-}
-*/
-
 void send_to ()
 {
-    ros::NodeHandle n;
+	ros::NodeHandle n;
 	ros::Rate loop_rate(10);
 	char buffer[500];
 
-	ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
-	ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
-
-    ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
-    ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
-    ros::Subscriber right_sub 	= n.subscribe("right_mot", 1000, rightCallback);
-    ros::Subscriber state_sub 	= n.subscribe("current_state", 1000, stateCallback);
-    //ros::Subscriber data_sub   	= n.subscribe("gps_angle_boat",   1000, posCallback);
-
-	ros::ServiceClient convert_coord_client = n.serviceClient<BathyBoatNav::gps_conversion>("gps_converter");
-    BathyBoatNav::gps_conversion convert_coord_msg;
+	ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
+	ros::Subscriber right_sub = n.subscribe("right_mot", 1000, rightCallback);
+	ros::Subscriber vel_sub 	= n.subscribe("/robot_state_raw", 1000, robotStateCallback);
 
 	while(ros::ok())
 	{
-		// Convert lambert to lat-long
-/*
-		convert_coord_msg.request.mode = 0;
-		convert_coord_msg.request.gps_x = x_lambert;
-		convert_coord_msg.request.gps_y = y_lambert;
 
-		if(convert_coord_client.call(convert_coord_msg))
-		{                
-			latitude = convert_coord_msg.response.converted_y;
-			longitude = convert_coord_msg.response.converted_x;
-		} else {
-			ROS_WARN("Call to gps converter failed");
-		}
-*/
-		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, vit, 100.0);
+		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%d\n",ros::Time::now().toSec(), latitude, longitude, yaw, vit, gps_status);
 
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -147,7 +125,7 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$BATT;%lf;%d;%d\n",ros::Time::now().toSec(), (rand() % 101)/100, (rand() % 101)/100);
+		sprintf(buffer,"$BATT;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), batt1, batt2, batt3);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
@@ -172,7 +150,7 @@ void send_to ()
 		}
 
 		ros::spinOnce();
-        	loop_rate.sleep();
+		loop_rate.sleep();
 	}
 }
 
@@ -349,8 +327,14 @@ int main(int argc, char *argv [])
     //n.param<bool>("isSending", isSending, true);
     //n.param<int>("port", port, 29200);
 
-    isSending = atoi(argv[2]);
-    port = atoi(argv[1]);
+    isSending = atoi(argv[1]);
+
+    if(isSending == 1)
+    {
+    	n.getParam("/tcp/dataPort", port);
+    } else {
+		n.getParam("/tcp/commandPort", port);
+    }
 
     yaw = 0.0;
     state = 0;

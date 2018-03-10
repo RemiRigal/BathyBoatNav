@@ -59,21 +59,20 @@ int main(int argc, char *argv [])
     
     // Initials parameters
     
-	n.param<string>("Path", path, "/dev/pololu_servo_serial");
-	n.param<string>("Cons_channel", channel, "cons_boat");
-	n.param<int>("Turn_gap", gap, 1000);
+    n.param<string>("Path", path, "/dev/pololu_servo_serial");
+    n.param<string>("Cons_channel", channel, "/cons_helios");
+    n.param<int>("Turn_gap", gap, 1000);
+    n.getParam("/simulation/simu", isSimulation);
+
 	// Connection to Maestro
-
-	if( (fd = maestroConnect(path.c_str())) == -1 )
+	if(!isSimulation)
 	{
-		ROS_INFO("Pololu not found. Simulation mode.");
-		isSimulation = true;
-	} else {
-		ROS_INFO("Pololu connected");
-		init_servo(fd);
-		isSimulation = false;
+		if( (fd = maestroConnect(path.c_str())) == -1 )
+		{
+			ROS_INFO("Pololu connected");
+			init_servo(fd);
+		}
 	}
-
 
 	// Subscribe msgs
 
@@ -118,5 +117,5 @@ int main(int argc, char *argv [])
 		loop_rate.sleep();
 	}
 
-	exit(0);
+	return EXIT_SUCCESS;
 }

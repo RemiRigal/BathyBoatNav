@@ -4,11 +4,7 @@ using namespace std;
 
 FSM::FSM()
 {
-	changeStateSrv = Handle.advertiseService("/changeStateSrv", &FSM::changeState, this);
-
-	pololuLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("pololu_state");
-	regulLeader 	= Handle.serviceClient<BathyBoatNav::new_state>("regul_state");
-	missionReady 	= Handle.serviceClient<std_srvs::Trigger>("mission_ready");
+	changeStateSrv = Handle.advertiseService("changeStateSrv", &FSM::changeState, this);
 }
 
 FSM::~FSM()
@@ -72,38 +68,6 @@ void FSM::setState(State newState)
 
 	state = newState;
 	ROS_INFO("Current state -> %d", state);
-}
-
-bool FSM::advertChangeState()
-{
-	bool pololu = false;
-	bool regul = false;
-
-	new_state_msg.request.state = state;
-	
-	if (pololuLeader.call(new_state_msg))
-	{
-		pololu = true;
-		if(!new_state_msg.response.success)
-		{
-			ROS_ERROR("Pololu failed to change state");
-		}
-	} else{
-		ROS_ERROR("Failed to call pololu");
-	}
-
-	if (regulLeader.call(new_state_msg))
-	{
-		regul = true;
-		if(!new_state_msg.response.success)
-		{
-			ROS_ERROR("Pololu failed to change state");
-		}
-	} else{
-		ROS_ERROR("Failed to call regulator");
-	}
-
-	return pololu && regul;
 }
 
 int main(int argc, char** argv){

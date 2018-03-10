@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 	print("Path : {}".format(mission_folder))
 
-	goal_srv 	= rospy.Service('/next_goal', next_goal, sendPointService)
-	mission_srv = rospy.Service('/new_mission', message, newMission)
+	goal_srv 	= rospy.Service('next_goal', next_goal, sendPointService)
+	mission_srv = rospy.Service('new_mission', message, newMission)
 
 	rospy.spin()

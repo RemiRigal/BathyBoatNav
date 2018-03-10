@@ -1,5 +1,5 @@
-#ifndef _REGULATOR_H
-#define _REGULATOR_H
+#ifndef _SIMULATOR_H
+#define _SIMULATOR_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,58 +25,48 @@
 #include "BathyBoatNav/robot_target.h"
 
 // Services
+#include "BathyBoatNav/gps_conversion.h"
 
-
-class Regulator{
+class Simulator{
 
 	public: 
-		Regulator();
-	    virtual ~Regulator();
+		Simulator();
+	    virtual ~Simulator();
 		void RunContinuously();
     
 	private: 
 		ros::NodeHandle Handle;
 
-		// Simulation
-		bool isSimulation;
-
 		// Robot state variables
 		State state;
 		double x[3];
+		double converted_x[3];
 		double roll, pitch, yaw;
 		double linear_speed[3];
 		double angular_speed[3];
-
-		// Robot target variables
-		bool isLine;
-		double x_target[3];
-		double roll_target, pitch_target, yaw_target;
-		double x_target_appoint[3];
-		tf::Quaternion q_target_appoint;
-		double linear_speed_target[3];
-		double angular_speed_target[3];
+		tf::Quaternion q;
 
 		// Robot state
 		ros::Subscriber robot_state_sub;
 		void updateRobotState(const BathyBoatNav::robot_state::ConstPtr& msg);
 
-		// Target
-		ros::Subscriber robot_target_sub;
-		void updateRobotTarget(const BathyBoatNav::robot_target::ConstPtr& msg);
-
 		// Command
+		ros::Subscriber command_sub;
 		double u_yaw, speed_bar;
-		double full_left;
-		ros::Publisher command_pub;
-		void updateCommandMsg();
-		void computeFixes();
+		void updateCommand(const geometry_msgs::Twist::ConstPtr& msg);
 
-		// Debug command
-		ros::Publisher debug_pub;
+		// Simulation
+		double speed;
+		void evolution();
 
-		// PID
-		double P, I;
-		double k_P, k_I, k_D;
+		// Simulated state
+		ros::Publisher robot_state_converted_evolved_pub;
+		ros::Publisher robot_state_raw_evolved_pub;
+		void updateRobotStateConvertedEvolvedMsg();
+		void updateRobotStateRawEvolvedMsg();
+
+		// Conversion with proj4
+		ros::ServiceClient convert_coords_client;
 };
 
 #endif

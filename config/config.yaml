@@ -10,6 +10,20 @@ tcp:
     commandPort: 22300
 target:
     accept_dist: 2.0
+pololu:
+    serial_path: /dev/pololu_servo_serial
+    turn_gap: 1000
+simulation:
+    simu: true
+    x_initial: 155165.0
+    y_initial: 6829365.0
+    yaw_initial: 0.0
+    speed_initial: 0.5
+regulation:
+    full_left: 2.5
+    k_P: 0.5
+    k_I: 0.5
+    k_I: 0.0
     
 ### Optional ###
 map:

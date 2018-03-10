@@ -4,28 +4,45 @@ using namespace std;
 
 Leader::Leader()
 {
-	Handle = new ros::NodeHandle("~");
-
 	// Import datas
-	Handle->getParam("/target/accept_dist", accept_dist);
+	Handle.getParam("/simulation/simu", isSimulation);
+	Handle.getParam("/target/accept_dist", accept_dist);
+	Handle.getParam("/regulation/k_P", k_P);
+	Handle.getParam("/regulation/k_I", k_I);
+	Handle.getParam("/regulation/k_D", k_D);
+	
+	// Robot state
+	robot_state_raw_pub = Handle.advertise<BathyBoatNav::robot_state>("/robot_state_raw", 1000);
 
 	// Robot state
-	robot_state_pub = Handle->advertise<BathyBoatNav::robot_state>("/robot_state", 1000);
+	robot_state_converted_pub = Handle.advertise<BathyBoatNav::robot_state>("/robot_state_converted", 1000);
 
 	// Robot target
-	robot_target_pub = Handle->advertise<BathyBoatNav::robot_target>("/robot_target", 1000);
+	robot_target_pub = Handle.advertise<BathyBoatNav::robot_target>("/robot_target", 1000);
 
 	// Parsing TCP inputs
-	serverInputs = Handle->advertiseService("/TCP_inputs", &Leader::parseCommand, this);
+	serverInputs = Handle.advertiseService("/TCP_inputs", &Leader::parseCommand, this);
 
 	// Change state of FSM
-	changeStateSrv = Handle->serviceClient<BathyBoatNav::new_state>("/changeStateSrv");
+	changeStateSrv = Handle.serviceClient<BathyBoatNav::new_state>("changeStateSrv");
 
 	// New mission
-	mision_path_client = Handle->serviceClient<BathyBoatNav::message>("/new_mission");
+	mision_path_client = Handle.serviceClient<BathyBoatNav::message>("new_mission");
 
 	// Next goal
-	next_goal_client = Handle->serviceClient<BathyBoatNav::next_goal>("/next_goal");
+	next_goal_client = Handle.serviceClient<BathyBoatNav::next_goal>("next_goal");
+
+	// Coordinates conversion
+	convert_coords_client = Handle.serviceClient<BathyBoatNav::gps_conversion>("/gps_converter");
+
+	// Evolution if simulation
+	if (isSimulation)
+	{
+		ROS_INFO("Simulation mode");
+		robot_state_converted_evolved_sub = Handle.subscribe("/robot_state_converted_evolved", 1000, &Leader::updateRobotStateConvertedEvolved, this);
+		robot_state_raw_evolved_sub = Handle.subscribe("/robot_state_raw_evolved", 1000, &Leader::updateRobotStateRawEvolved, this);
+	}
+
 }
 
 Leader::~Leader()
@@ -40,23 +57,22 @@ void Leader::RunContinuously()
 	ros::Rate loop_rate(25);
 	while(ros::ok())
 	{
-		// Leader::checkIfTargetValidated();
-		ROS_INFO("State %d", state);
+		if(state == RUNNING)
+		{
+			Leader::checkIfTargetValidated();
+		}
 
 		Leader::updateRobotStateMsg();
 		Leader::updateRobotTargetMsg();
-
-		robot_state_pub.publish(robot_state_msg);
-		robot_target_pub.publish(robot_target_msg);
 
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
 }
 
-bool Leader::setState(string state)
+bool Leader::setState(string state_str)
 {
-	new_state_msg.request.state = state;
+	new_state_msg.request.state = state_str;
 	if (changeStateSrv.call(new_state_msg))
 	{
 		if(!new_state_msg.response.success)
@@ -64,7 +80,6 @@ bool Leader::setState(string state)
 			ROS_ERROR("FSM failed to change state");
 			return false;
 		}
-		ROS_INFO("Received %d", new_state_msg.response.state);
 		state = State(new_state_msg.response.state);
 	} else {
 		ROS_ERROR("Failed to call FSM");
@@ -113,7 +128,7 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 			} else {
 				ROS_INFO("Speed message canvas is \"SPEED|coeffSPD\" but received \"%s\"", msg.c_str());
 			}
-		} else if( key_msg == "RESUME" || key_msg == "PAUSE" || key_msg == "RTL" || key_msg == "STOP" || key_msg == "EMERGENCY") {
+		} else if(key_msg == "RESUME" || key_msg == "PAUSE" || key_msg == "RTL" || key_msg == "STOP" || key_msg == "EMERGENCY") {
 			if(sizeVector == 1)
 			{
 				error = ! Leader::setState(key_msg);
@@ -142,6 +157,7 @@ bool Leader::changeMission(string path)
 		{
 			ROS_INFO("Mission parsed");
 			Leader::askForNewWaypoints();
+			Leader::setState("PAUSE");
 		} else {
 			ROS_WARN("Mission parsing failed");
 		}
@@ -180,7 +196,7 @@ void Leader::askForNewWaypoints()
 
     if (next_goal_client.call(next_goal_msg))
     {
-        if( (int)sizeof(next_goal_msg.response.remainingMissions) != 0 )
+        if( next_goal_msg.response.remainingMissions != 0 )
         {
             isLine       	= next_goal_msg.response.isRadiale;
             x_target[0]     = next_goal_msg.response.latitude[0];
@@ -196,11 +212,12 @@ void Leader::askForNewWaypoints()
 
             q_target.setRPY(0.0, 0.0, yaw_radiale);
 
+            ROS_INFO("Target -> %s | (%lf, %lf)", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1]);
+
         } else {
         	ROS_INFO("Mission finished. IDLE state.");
+        	Leader::setState("IDLE");
         }
-
-        ROS_INFO("Target -> %s | (%lf, %lf)", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1]);
 
     } else{
         ROS_ERROR("Failed to call next goal service");
@@ -209,6 +226,8 @@ void Leader::askForNewWaypoints()
 
 void Leader::updateRobotStateMsg()
 {
+	BathyBoatNav::robot_state robot_state_msg;
+
 	robot_state_msg.header.stamp = ros::Time::now();
 
 	robot_state_msg.state = state;
@@ -232,10 +251,73 @@ void Leader::updateRobotStateMsg()
 	robot_state_msg.pid.k_P = k_P;
 	robot_state_msg.pid.k_I = k_I;
 	robot_state_msg.pid.k_D = k_D;
+
+	double batt_array[] = {50.0, 60.0, 40.0};
+	batt = vector<double>(batt_array, batt_array + sizeof(batt_array) / sizeof(double) );
+
+	robot_state_msg.batteries.data = batt;
+
+	robot_state_raw_pub.publish(robot_state_msg);
+
+	Leader::updateRobotStateConvertedMsg();
+}
+
+void Leader::updateRobotStateConvertedMsg()
+{
+	BathyBoatNav::robot_state robot_state_msg;
+	BathyBoatNav::gps_conversion convert_coords_msg;
+
+	if (!isSimulation)
+	{
+		convert_coords_msg.request.mode = 1;
+		convert_coords_msg.request.long_or_x = x[0];
+		convert_coords_msg.request.lat_or_y = x[1];
+
+		if (convert_coords_client.call(convert_coords_msg))
+		{
+			converted_x[0] = convert_coords_msg.response.long_or_x;
+			converted_x[1] = convert_coords_msg.response.lat_or_y;
+		} else {
+			ROS_ERROR("Failed to call gps converter");
+		}
+	}
+
+	robot_state_msg.header.stamp = ros::Time::now();
+
+	robot_state_msg.state = state;
+	robot_state_msg.gps_status = gps_status;
+
+	robot_state_msg.pose.position.x = converted_x[0];
+	robot_state_msg.pose.position.y = converted_x[1];
+	robot_state_msg.pose.position.z = converted_x[2];
+	robot_state_msg.pose.orientation.x = q.getX();
+	robot_state_msg.pose.orientation.y = q.getY();
+	robot_state_msg.pose.orientation.z = q.getZ();
+	robot_state_msg.pose.orientation.w = q.getW();
+
+	robot_state_msg.speed.linear.x = linear_speed[0];
+	robot_state_msg.speed.linear.y = linear_speed[1];
+	robot_state_msg.speed.linear.z = linear_speed[2];
+	robot_state_msg.speed.angular.x = angular_speed[0];
+	robot_state_msg.speed.angular.y = angular_speed[1];
+	robot_state_msg.speed.angular.z = angular_speed[2];
+
+	robot_state_msg.pid.k_P = k_P;
+	robot_state_msg.pid.k_I = k_I;
+	robot_state_msg.pid.k_D = k_D;
+
+	double batt_array[] = {50.0, 60.0, 40.0};
+	batt = vector<double>(batt_array, batt_array + sizeof(batt_array) / sizeof(double) );
+
+	robot_state_msg.batteries.data = batt;
+
+	robot_state_converted_pub.publish(robot_state_msg);
 }
 
 void Leader::updateRobotTargetMsg()
 {
+	BathyBoatNav::robot_target robot_target_msg;
+
 	robot_target_msg.header.stamp = ros::Time::now();
 	
 	robot_target_msg.isLine = isLine;
@@ -262,6 +344,30 @@ void Leader::updateRobotTargetMsg()
 	robot_target_msg.speed.angular.x = angular_speed_target[0];
 	robot_target_msg.speed.angular.y = angular_speed_target[1];
 	robot_target_msg.speed.angular.z = angular_speed_target[2];
+
+	robot_target_pub.publish(robot_target_msg);
+}
+
+void Leader::updateRobotStateConvertedEvolved(const BathyBoatNav::robot_state::ConstPtr& msg)
+{
+	converted_x[0] = msg->pose.position.x;
+	converted_x[1] = msg->pose.position.y;
+	converted_x[2] = msg->pose.position.z;
+
+	tf::Quaternion q_evolved(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w);
+
+	q = q_evolved;
+}
+
+void Leader::updateRobotStateRawEvolved(const BathyBoatNav::robot_state::ConstPtr& msg)
+{
+	x[0] = msg->pose.position.x;
+	x[1] = msg->pose.position.y;
+	x[2] = msg->pose.position.z;
+
+	tf::Quaternion q_evolved(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w);
+
+	q = q_evolved;
 }
 
 void Leader::gatherData()
