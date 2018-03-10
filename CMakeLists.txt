@@ -63,6 +63,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   robot_state.msg
+  robot_target.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -172,6 +173,8 @@ add_executable(fsm src/fsm.cpp)
 
 add_executable(gps_converter   src/gps_converter.cpp)
 
+add_executable(leader   src/leader.cpp)
+
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
 ## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
@@ -208,6 +211,10 @@ target_link_libraries(gps_converter
 )
 
 target_link_libraries(fsm
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(leader
   ${catkin_LIBRARIES}
 )
 

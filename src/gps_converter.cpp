@@ -28,7 +28,7 @@ void Converter::convert2LambertCallback(const sensor_msgs::NavSatFix::ConstPtr& 
 
 void Converter::angleCallback(const geometry_msgs::Vector3Stamped::ConstPtr& msg)
 {
-	pose.linear.z = msg->vector.z ;
+	pose.angular.z = msg->vector.z ;
 }
 
 bool Converter::convertService(BathyBoatNav::gps_conversion::Request &req, BathyBoatNav::gps_conversion::Response &res)
@@ -97,10 +97,16 @@ BathyBoatNav::gps_conversion::Response Converter::Latlong_to_lambert(double x, d
 }
 
 void Converter::RunContinuously()
-{    
+{
 	ROS_INFO("Node %s running continuously.", ros::this_node::getName().c_str());
-	pub.publish(pose);
-	ros::spin();
+	ros::Rate loop_rate(25);
+	while(ros::ok())
+	{
+		pub.publish(pose);
+
+		ros::spinOnce();
+		loop_rate.sleep();
+	}
 }
 
 

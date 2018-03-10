@@ -39,7 +39,6 @@ int maestroSetTarget(int fd, unsigned char channel, unsigned short target)
     }
     return 0;
 }
-
 /**
  * Sets the acceleration of a Maestro channel.
  * See the "Serial Servo Commands" section of the user's guide.
@@ -75,7 +74,9 @@ int maestroConnect(const char * device){
     {
         printf("Connection failed\n");
         perror(device);
+        return 1;
     }
     return fd;
 }
+
 

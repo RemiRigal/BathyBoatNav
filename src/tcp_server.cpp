@@ -88,14 +88,14 @@ void stateCallback(const std_msgs::Int16::ConstPtr& msg)
 {
     state = State(msg->data);
 }
-
+/*
 void posCallback(const geometry_msgs::Twist::ConstPtr& msg)
 {
     x_lambert 	= msg->linear.x;
     y_lambert 	= msg->linear.y;
     yaw 		= msg->angular.z;
 }
-
+*/
 
 void send_to ()
 {
@@ -103,14 +103,14 @@ void send_to ()
 	ros::Rate loop_rate(10);
 	char buffer[500];
 
-	// ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
-	// ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
+	ros::Subscriber yaw_sub 	= n.subscribe("imu_attitude", 1000, yawCallback);
+	ros::Subscriber gps_sub 	= n.subscribe("nav", 1000, gpsCallback);
 
     ros::Subscriber vel_sub 	= n.subscribe("nav_vel", 1000, velCallback);
     ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
     ros::Subscriber right_sub 	= n.subscribe("right_mot", 1000, rightCallback);
     ros::Subscriber state_sub 	= n.subscribe("current_state", 1000, stateCallback);
-    ros::Subscriber data_sub   	= n.subscribe("gps_angle_boat",   1000, posCallback);
+    //ros::Subscriber data_sub   	= n.subscribe("gps_angle_boat",   1000, posCallback);
 
 	ros::ServiceClient convert_coord_client = n.serviceClient<BathyBoatNav::gps_conversion>("gps_converter");
     BathyBoatNav::gps_conversion convert_coord_msg;
@@ -118,7 +118,7 @@ void send_to ()
 	while(ros::ok())
 	{
 		// Convert lambert to lat-long
-
+/*
 		convert_coord_msg.request.mode = 0;
 		convert_coord_msg.request.gps_x = x_lambert;
 		convert_coord_msg.request.gps_y = y_lambert;
@@ -130,7 +130,7 @@ void send_to ()
 		} else {
 			ROS_WARN("Call to gps converter failed");
 		}
-
+*/
 		sprintf(buffer,"$POS;%lf;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), latitude, longitude, yaw, vit, 100.0);
 
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )

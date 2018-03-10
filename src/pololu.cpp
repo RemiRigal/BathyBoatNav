@@ -108,11 +108,15 @@ int main(int argc, char *argv [])
 	{
 		if(state == RUNNING)
 		{
-			left_mot 	= 4000.0 + u_throttle*(4000.0 - gap) + u_yaw*gap;
-			right_mot 	= 4000.0 + u_throttle*(4000.0 - gap) - u_yaw*gap;
+			double moteur_droite = u_throttle - u_yaw;
+			double moteur_gauche = u_throttle + u_yaw;
+			double moteur_droite2 = moteur_droite/max(max(1.0, moteur_droite), moteur_gauche);
+			double moteur_gauche2 = moteur_gauche/max(max(1.0, moteur_droite), moteur_gauche);
+			left_mot 	= 4000.0 + moteur_gauche2*3500.0;
+			right_mot 	= 4000.0 + moteur_droite2*3500.0;
 		} else {
-			left_mot 	= 0.0;
-			right_mot 	= 0.0;
+			left_mot 	= 4000.0;
+			right_mot 	= 4000.0;
 		}
 
 		left_mot_msgs.data = left_mot;

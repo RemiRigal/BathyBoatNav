@@ -1,5 +1,5 @@
-#ifndef _FSM_H
-#define _FSM_H
+#ifndef _REGULATOR_H
+#define _REGULATOR_H
 
 #include <iostream>
 #include <string>
