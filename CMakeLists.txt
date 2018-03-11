@@ -167,8 +167,6 @@ include_directories(
 add_executable(tcp_server  src/tcp_server.cpp)
 
 add_executable(pololu             src/pololu.cpp)
-add_executable(regul_helios       src/regul_helios.cpp)
-add_executable(simu_helios 	      src/simu_helios.cpp)
 
 add_executable(fsm src/fsm.cpp)
 
@@ -202,14 +200,6 @@ target_link_libraries(pololu
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(regul_helios
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(simu_helios
-  ${catkin_LIBRARIES}
-)
-
 target_link_libraries(gps_converter
   proj
   ${catkin_LIBRARIES}
@@ -231,9 +221,6 @@ target_link_libraries(simulator
   ${catkin_LIBRARIES}
 )
 
-#target_link_libraries(mission_interpreter
-#  ${catkin_LIBRARIES}
-#)
 #############
 ## Install ##
 #############

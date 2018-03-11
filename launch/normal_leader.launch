@@ -1,5 +1,7 @@
 <launch>
 
+    <param name="isSimu" type="bool" value="false"/>
+
     <rosparam file="$(find BathyBoatNav)/config/config.yaml" command="load"/>
 
     <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>

@@ -5,11 +5,12 @@ using namespace std;
 Leader::Leader()
 {
 	// Import datas
-	Handle.getParam("/simulation/simu", isSimulation);
+	Handle.getParam("/isSimu", isSimulation);
 	Handle.getParam("/target/accept_dist", accept_dist);
 	Handle.getParam("/regulation/k_P", k_P);
 	Handle.getParam("/regulation/k_I", k_I);
 	Handle.getParam("/regulation/k_D", k_D);
+	Handle.getParam("/regulation/initial_speed", linear_speed_target[0]);
 	
 	// Robot state
 	robot_state_raw_pub = Handle.advertise<BathyBoatNav::robot_state>("/robot_state_raw", 1000);
@@ -39,6 +40,10 @@ Leader::Leader()
 	if (isSimulation)
 	{
 		ROS_INFO("Simulation mode");
+		robot_state_converted_evolved_sub = Handle.subscribe("/evolved_robot_state_converted", 1000, &Leader::updateRobotStateConvertedEvolved, this);
+		robot_state_raw_evolved_sub = Handle.subscribe("/evolved_robot_state_raw", 1000, &Leader::updateRobotStateRawEvolved, this);
+	} else {
+		ROS_INFO("Normal mode");
 		robot_state_converted_evolved_sub = Handle.subscribe("/robot_state_converted_evolved", 1000, &Leader::updateRobotStateConvertedEvolved, this);
 		robot_state_raw_evolved_sub = Handle.subscribe("/robot_state_raw_evolved", 1000, &Leader::updateRobotStateRawEvolved, this);
 	}
@@ -338,8 +343,8 @@ void Leader::updateRobotTargetMsg()
 	robot_target_msg.pose_appoint.orientation.z = q_target_appoint.getZ();
 	robot_target_msg.pose_appoint.orientation.w = q_target_appoint.getW();
 
-	robot_target_msg.speed.linear.y = linear_speed_target[1];
 	robot_target_msg.speed.linear.x = linear_speed_target[0];
+	robot_target_msg.speed.linear.y = linear_speed_target[1];
 	robot_target_msg.speed.linear.z = linear_speed_target[2];
 	robot_target_msg.speed.angular.x = angular_speed_target[0];
 	robot_target_msg.speed.angular.y = angular_speed_target[1];

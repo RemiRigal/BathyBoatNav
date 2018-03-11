@@ -62,7 +62,7 @@ int main(int argc, char *argv [])
     n.param<string>("Path", path, "/dev/pololu_servo_serial");
     n.param<string>("Cons_channel", channel, "/cons_helios");
     n.param<int>("Turn_gap", gap, 1000);
-    n.getParam("/simulation/simu", isSimulation);
+    n.getParam("/isSimu", isSimulation);
 
 	// Connection to Maestro
 	if(!isSimulation)

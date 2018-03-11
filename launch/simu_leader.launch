@@ -1,0 +1,34 @@
+<launch>
+
+    <param name="isSimu" type="bool" value="true"/>
+
+    <rosparam file="$(find BathyBoatNav)/config/config.yaml" command="load"/>
+
+    <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
+
+    <group ns="brain">
+        <node name="leader" pkg="BathyBoatNav" type="leader" output="screen" />
+
+        <node name="mission_parser" pkg="BathyBoatNav" type="mission_parser.py" output="screen" />
+
+        <node name="fsm" pkg="BathyBoatNav" type="fsm" output="screen" />
+    </group>
+
+    <node name="simulator" pkg="BathyBoatNav" type="simulator" output="screen"/>
+
+<!--
+    <group ns="server">
+
+        <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="1" output="screen" />
+        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="0" output="screen" />
+
+	</group>
+-->
+
+    <group ns="command">
+        <node name="regul" pkg="BathyBoatNav" type="regulator" output="screen" />
+
+        <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen" />
+	</group>
+    
+</launch>

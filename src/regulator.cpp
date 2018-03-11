@@ -5,7 +5,7 @@ using namespace std;
 Regulator::Regulator()
 {
 	// Import datas
-	Handle.getParam("/simulation/simu", isSimulation);
+	Handle.getParam("/isSimu", isSimulation);
 	Handle.getParam("/regulation/full_left", full_left);
 
 	// Robot state
@@ -127,7 +127,7 @@ void Regulator::computeFixes()
 	// Debug
 	std_msgs::Float64MultiArray debug_msg;
 
-	double debug_array[] = {yaw_bar, e};
+	double debug_array[] = {yaw_bar, yaw, e};
 	vector<double> debug_data = vector<double>(debug_array, debug_array + sizeof(debug_array) / sizeof(double) );
 
 	debug_msg.data = debug_data;
