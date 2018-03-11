@@ -163,6 +163,7 @@ bool Leader::changeMission(string path)
 		if(mission_path_msg.response.success)
 		{
 			ROS_INFO("Mission parsed");
+			mission_finished = false;
 			Leader::askForNewWaypoints();
 			Leader::setState("PAUSE");
 		} else {
@@ -204,7 +205,7 @@ void Leader::askForNewWaypoints()
 
     if (next_goal_client.call(next_goal_msg))
     {
-        if( next_goal_msg.response.remainingMissions != 0 )
+        if( ! mission_finished )
         {
             isLine       	= next_goal_msg.response.isRadiale;
             x_target[0]     = next_goal_msg.response.latitude[0];
@@ -221,7 +222,7 @@ void Leader::askForNewWaypoints()
             q_target.setRPY(0.0, 0.0, yaw_radiale);
 
             ROS_INFO("Target -> %s | (%lf, %lf)", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1]);
-
+            mission_finished = next_goal_msg.response.isLast;
         } else {
         	ROS_INFO("Mission finished. IDLE state.");
         	Leader::setState("IDLE");

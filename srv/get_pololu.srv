@@ -1,0 +1,4 @@
+int16 channel
+---
+int16 value
+bool success

@@ -5,8 +5,8 @@ using namespace std;
 Simulator::Simulator()
 {
 	// Import datas
-	Handle.getParam("/common/map/initialPosition/lat", x[0]);
-	Handle.getParam("/common/map/initialPosition/lng", x[1]);
+	Handle.getParam("/common/map/initialPosition/lat", x[1]);
+	Handle.getParam("/common/map/initialPosition/lng", x[0]);
 
 	// Robot state
 	robot_state_sub = Handle.subscribe("/robot_state_converted", 1000, &Simulator::updateRobotState, this);

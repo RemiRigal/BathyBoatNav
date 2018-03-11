@@ -18,7 +18,24 @@
  * @param channel
  * @return
  */
-int maestroGetPosition(int fd, unsigned char channel);
+int maestroGetPosition(int fd, unsigned char channel)
+{
+  unsigned char command[] = {0x90, channel};
+  if(write(fd, command, sizeof(command)) == -1)
+  {
+    perror("error writing");
+    return -1;
+  }
+ 
+  unsigned char response[2];
+  if(read(fd,response,2) != 2)
+  {
+    perror("error reading");
+    return -1;
+  }
+ 
+  return response[0] + 256*response[1];
+}
 
 /**
  * Sets the target of a Maestro channel.
@@ -39,29 +56,6 @@ int maestroSetTarget(int fd, unsigned char channel, unsigned short target)
     }
     return 0;
 }
-/**
- * Sets the acceleration of a Maestro channel.
- * See the "Serial Servo Commands" section of the user's guide.
- * The speed limit is given in units of (0.25 μs)/(10 ms)
- * Speed of 0 is unlimited
- * @param fd
- * @param channel
- * @param target
- * @return
- */
-int maestroSetSpeed(int fd, unsigned char channel, unsigned short target);
-
-/**
- * Sets the speed of a Maestro channel.
- * See the "Serial Servo Commands" section of the user's guide.
- * The acceleration limit is a value from 0 to 255 in units of (0.25 μs)/(10 ms)/(80 ms)
- * Acceleration of 0 is unlimited
- * @param fd
- * @param channel
- * @param target
- * @return
- */
-int maestroSetAccel(int fd, unsigned char channel, unsigned short target);
 
 /**
  * Connexion de la maestro

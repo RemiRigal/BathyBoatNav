@@ -33,11 +33,12 @@
 #include "BathyBoatNav/next_goal.h"
 #include "BathyBoatNav/gps_conversion.h"
 
-class Leader{
+class Leader
+{
 
 	public: 
 		Leader();
-	    virtual ~Leader();
+	    ~Leader();
 		void RunContinuously();
     
 	private: 
@@ -92,6 +93,7 @@ class Leader{
 		bool setState(std::string state);
 
 		// New mission
+		bool mission_finished;
 		double accept_dist;
 		BathyBoatNav::message mission_path_msg;
 		ros::ServiceClient mision_path_client;
