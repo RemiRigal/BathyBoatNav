@@ -95,7 +95,7 @@ class Mission(object):
                 'latitude': [radiale['start']['lat'], radiale['end']['lat']],
                 'longitude': [radiale['start']['lng'], radiale['end']['lng']],
                 'id': radiale['id'],
-                'isRadiales': True
+                'isRadiale': True
             }
             self.points.append(point)
         return True
@@ -109,14 +109,14 @@ class Mission(object):
                 'latitude': [waypoint['lat']],
                 'longitude': [waypoint['lng']],
                 'id': waypoint['id'],
-                'isRadiales': False
+                'isRadiale': False
             }
             self.points.append(point)
         return True
 
 
 if __name__ == '__main__':
-    missionDirectory = rospy.get_param('/ros/missions/path')
+    missionDirectory = rospy.get_param('/common/missions/path')
     missionParser = MissionParser(missionDirectory)
 
     rospy.init_node('mission_parser')

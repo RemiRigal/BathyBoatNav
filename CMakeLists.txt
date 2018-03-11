@@ -180,7 +180,7 @@ add_executable(regulator   src/regulator.cpp)
 
 add_executable(simulator   src/simulator.cpp)
 
-add_executable(pololu_maestro   src/pololu_maestro.cpp)
+#add_executable(pololu_maestro   src/pololu_maestro.cpp)
 
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -225,9 +225,9 @@ target_link_libraries(simulator
   ${catkin_LIBRARIES}
 )
 
-target_link_libraries(pololu_maestro
-  ${catkin_LIBRARIES}
-)
+#target_link_libraries(pololu_maestro
+#  ${catkin_LIBRARIES}
+#)
 
 #############
 ## Install ##
