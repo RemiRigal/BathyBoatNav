@@ -24,6 +24,7 @@
 #include "std_msgs/Float64.h"
 
 #include "BathyBoatNav/robot_state.h"
+#include "BathyBoatNav/robot_target.h"
 #include "BathyBoatNav/message.h"
 #include "BathyBoatNav/gps_conversion.h"
 #include "BathyBoatNav/pid_coeff.h"
@@ -52,6 +53,9 @@ double u_yaw, u_throttle;
 double batt1, batt2, batt3;
 
 double left_mot, right_mot;
+
+double k_P, k_I, k_D;
+double speed;
 
 int state;
 
@@ -83,6 +87,15 @@ void robotStateCallback(const BathyBoatNav::robot_state::ConstPtr& msg)
 	batt1 = msg->batteries.data[0];
 	batt2 = msg->batteries.data[1];
 	batt3 = msg->batteries.data[2];
+
+	k_P = msg->pid.k_P;
+	k_I = msg->pid.k_I;
+	k_D = msg->pid.k_D;
+}
+
+void robotTargetCallback(const BathyBoatNav::robot_target::ConstPtr& msg)
+{
+	speed = msg->speed.linear.x;
 }
 
 
@@ -104,7 +117,8 @@ void send_to ()
 
 	ros::Subscriber left_sub 	= n.subscribe("/left_mot", 1000, leftCallback);
 	ros::Subscriber right_sub = n.subscribe("/right_mot", 1000, rightCallback);
-	ros::Subscriber vel_sub 	= n.subscribe("/robot_state_raw", 1000, robotStateCallback);
+	ros::Subscriber state_sub 	= n.subscribe("/robot_state_raw", 1000, robotStateCallback);
+	ros::Subscriber target_sub 	= n.subscribe("/robot_target", 1000, robotTargetCallback);
 
 	while(ros::ok())
 	{
@@ -141,7 +155,7 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$STATE;%lf;%d\n",ros::Time::now().toSec(), state);
+		sprintf(buffer,"$STATE;%lf;%d;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), state, speed, k_P, k_I, k_D);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
