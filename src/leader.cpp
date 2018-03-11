@@ -206,60 +206,59 @@ void Leader::askForNewWaypoints()
 	double not_converted_x_appoint[3];
 
 	BathyBoatNav::gps_conversion convert_coords_msg;
-
-    if (next_goal_client.call(next_goal_msg))
+    if( !mission_finished )
     {
-        if( ! mission_finished )
-        {
-			isLine = next_goal_msg.response.isRadiale;
-			not_converted_x[0] = next_goal_msg.response.latitude[0];
-			not_converted_x[1] = next_goal_msg.response.longitude[0];
-			id = next_goal_msg.response.id;
+	    if (next_goal_client.call(next_goal_msg))
+	    {
 
-			convert_coords_msg.request.mode = 1;
-			convert_coords_msg.request.long_or_x = not_converted_x[1];
-			convert_coords_msg.request.lat_or_y = not_converted_x[0];
-
-			if (convert_coords_client.call(convert_coords_msg))
-			{
-				x_target[0] = convert_coords_msg.response.long_or_x;
-				x_target[1] = convert_coords_msg.response.lat_or_y;
-			} else {
-				ROS_ERROR("Failed to call gps converter");
-			}
-
-            if(isLine)
-            {
-				not_converted_x_appoint[0] = next_goal_msg.response.latitude[1];
-				not_converted_x_appoint[1] = next_goal_msg.response.longitude[1];
+				isLine = next_goal_msg.response.isRadiale;
+				not_converted_x[0] = next_goal_msg.response.latitude[0];
+				not_converted_x[1] = next_goal_msg.response.longitude[0];
+				id = next_goal_msg.response.id;
 
 				convert_coords_msg.request.mode = 1;
-				convert_coords_msg.request.long_or_x = not_converted_x_appoint[1];
-				convert_coords_msg.request.lat_or_y = not_converted_x_appoint[0];
+				convert_coords_msg.request.long_or_x = not_converted_x[1];
+				convert_coords_msg.request.lat_or_y = not_converted_x[0];
 
 				if (convert_coords_client.call(convert_coords_msg))
 				{
-					x_target_appoint[0] = convert_coords_msg.response.long_or_x;
-					x_target_appoint[1] = convert_coords_msg.response.lat_or_y;
+					x_target[0] = convert_coords_msg.response.long_or_x;
+					x_target[1] = convert_coords_msg.response.lat_or_y;
 				} else {
 					ROS_ERROR("Failed to call gps converter");
 				}
-            }    
-            yaw_radiale = isLine ? atan2(x_target[0] - x_target_appoint[0], x_target[1] - x_target_appoint[1]) : 0.0;
 
-            q_target.setRPY(0.0, 0.0, yaw_radiale);
+	            if(isLine)
+	            {
+					not_converted_x_appoint[0] = next_goal_msg.response.latitude[1];
+					not_converted_x_appoint[1] = next_goal_msg.response.longitude[1];
 
-            ROS_INFO("Target -> %s | (%lf, %lf) | isLast : %d", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1], isLast);
+					convert_coords_msg.request.mode = 1;
+					convert_coords_msg.request.long_or_x = not_converted_x_appoint[1];
+					convert_coords_msg.request.lat_or_y = not_converted_x_appoint[0];
 
-            mission_finished = next_goal_msg.response.isLast;
+					if (convert_coords_client.call(convert_coords_msg))
+					{
+						x_target_appoint[0] = convert_coords_msg.response.long_or_x;
+						x_target_appoint[1] = convert_coords_msg.response.lat_or_y;
+					} else {
+						ROS_ERROR("Failed to call gps converter");
+					}
+	            }    
+	            yaw_radiale = isLine ? atan2(x_target[0] - x_target_appoint[0], x_target[1] - x_target_appoint[1]) : 0.0;
 
-        } else {
-        	ROS_INFO("Mission finished. IDLE state.");
-        	Leader::setState("IDLE");
-        }
+	            q_target.setRPY(0.0, 0.0, yaw_radiale);
 
-    } else{
-        ROS_ERROR("Failed to call next goal service");
+	            ROS_INFO("Target -> %s | (%lf, %lf)", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1]);
+
+	            mission_finished = next_goal_msg.response.isLast;
+
+	    } else{
+	        ROS_ERROR("Failed to call next goal service");
+	    }
+	} else {
+    	ROS_INFO("Mission finished. IDLE state.");
+    	Leader::setState("IDLE");
     }
 }
 
