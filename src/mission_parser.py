@@ -94,7 +94,8 @@ class Mission(object):
             point = {
                 'latitude': [radiale['start']['lat'], radiale['end']['lat']],
                 'longitude': [radiale['start']['lng'], radiale['end']['lng']],
-                'id': radiale['id']
+                'id': radiale['id'],
+                'isRadiales': True
             }
             self.points.append(point)
         return True
@@ -107,7 +108,8 @@ class Mission(object):
             point = {
                 'latitude': [waypoint['lat']],
                 'longitude': [waypoint['lng']],
-                'id': waypoint['id']
+                'id': waypoint['id'],
+                'isRadiales': False
             }
             self.points.append(point)
         return True
