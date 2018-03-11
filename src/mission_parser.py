@@ -1,150 +1,125 @@
 #!/usr/bin/env python
 
-from BathyBoatNav.srv import *
-from std_srvs.srv import Trigger
-from collections import defaultdict
+from BathyBoatNav.srv import next_goal, message
 import rospy
 import json
-import os.path
-import sys
-from functools import partial
-import pyproj
-
-global missions, nbrMissions, longitudes, latitudes, ids, nbrMissionsSent, name_mission_file, ready
-ids = defaultdict(list)
-latitudes = defaultdict(list)
-longitudes = defaultdict(list)
-missions = defaultdict(list)
-nbrMissions = 0
-nbrMissionsSent = 0
-
-def convert(latitude, longitude):
-
-	PROJECT = partial(
-	pyproj.transform,
-	pyproj.Proj(init='epsg:4326'),
-	pyproj.Proj(init='epsg:2154'))
-
-	x_lambert, y_lambert = PROJECT(longitude, latitude)
-
-	return x_lambert, y_lambert
-
-def readFile():
-	global name_mission_file, missions, nbrMissions, longitudes, latitudes, ids
-
-	ids = defaultdict(list)
-	latitudes = defaultdict(list)
-	longitudes = defaultdict(list)
-	missions = defaultdict(list)
-	nbrMissions = 0
-	nbrMissionsSent = 0
-
-	path = mission_folder + name_mission_file
-	print(path)
-	if os.path.isfile(path):
-		with open(path, "r") as jsonFile:
-			jsonDict = json.loads(jsonFile.read())
-			
-			print(jsonDict)
-			badJson = False
-			
-			if "missions" in jsonDict.keys():
-				for i in jsonDict["missions"] :
-					if all (k in i.keys() for k in ("waypoints", "type")) and i["type"] == "Waypoints" :
-						missions[nbrMissions] = False;
-						for j in i["waypoints"] :
-							if all (k in j.keys() for k in ("lat", "lng")):
-								x, y = convert(j["lat"], j["lng"])
-								latitudes[nbrMissions].append(x)
-								longitudes[nbrMissions].append(y)
-								ids[nbrMissions].append(0)
-							else:
-								badJson = True
-					elif all (k in i.keys() for k in ("radiales", "type")) and i["type"] == "Radiales" :
-						missions[nbrMissions] = True;
-						for j in i["radiales"] :
-							if all (k in j.keys() for k in ("id", "start", "end")):
-								start_x, start_y = convert(j["start"]["lat"], j["start"]["lng"])
-								end_x, end_y = convert(j["end"]["lat"], j["end"]["lng"])
-
-								latitudes[nbrMissions].append(start_x)
-								latitudes[nbrMissions].append(end_x)
-								longitudes[nbrMissions].append(start_y)
-								longitudes[nbrMissions].append(end_y)
-								ids[nbrMissions].append(j["id"])	
-							else:
-								badJson = True			
-					else:
-						badJson = True	
-							
-					nbrMissions += 1
-			else:
-				badJson = True	
-			if badJson:
-				rospy.logerr("Wrong conventions Json mission file")
-				return False
-	else:
-		rospy.logerr("No mission file found")
-		return False
-
-	print(ids)
-	print(latitudes)
-	print(longitudes)
-	print(missions)
-	print(nbrMissions)
-	print(nbrMissionsSent)
-
-	return True
-		
-def sendPointService(req):
-	global missions, nbrMissions, longitudes, latitudes, nbrMissionsSent
-	res = {}
-	res["longitude"] = [] 
-  	res["latitude"] = []
-
-	if nbrMissionsSent < nbrMissions and len(longitudes[nbrMissionsSent]) > 0:
-		res["isRadiale"] = missions[nbrMissionsSent]
-		if not missions[nbrMissionsSent]:
-			res["longitude"].append(longitudes[nbrMissionsSent].pop(0))
-			res["latitude"].append(latitudes[nbrMissionsSent].pop(0))
-		else: 
-			res["longitude"].append(longitudes[nbrMissionsSent].pop(1))
-			res["latitude"].append(latitudes[nbrMissionsSent].pop(1))
-			res["longitude"].append(longitudes[nbrMissionsSent].pop(0))
-			res["latitude"].append(latitudes[nbrMissionsSent].pop(0))
-		
-		res["id"] = ids[nbrMissionsSent].pop(0) 
-		
-		res["remainingMissions"] = nbrMissions - nbrMissionsSent
-
-		print(latitudes)
-		print(nbrMissions - nbrMissionsSent)
-
-		if not longitudes[nbrMissionsSent]:
-			nbrMissionsSent += 1
+import os
 
 
-	return res
+class MissionParser(object):
 
-def newMission(req):
-	global name_mission_file
-	res = {}
-	name_mission_file = req.message
+    def __init__(self, missionDir):
+        self.missions = []
+        self.missionDirectory = missionDir
+        self.currentMission = 0
 
-	res['success'] = readFile()
-	print(latitudes)
-	print(nbrMissions - nbrMissionsSent)
+    def parseMissionsFromFile(self, path):
+        filePath = os.path.join(self.missionDirectory, path)
+        if not os.path.isfile(filePath):
+            rospy.logerr('No mission file found')
+            return False
+        with open(filePath, 'r') as f:
+            jsonMissions = json.loads(f.read())
+        if not 'missions' in jsonMissions.keys():
+            return False
+        for jsonMission in jsonMissions['missions']:
+            mission = Mission.parse(jsonMission)
+            if mission is None:
+                return False
+            self.missions.append(mission)
+        return True
 
-	return res
+    def newMission(self, req):
+        self.missions = []
+        self.currentMission = 0
+        return { 'success': self.parseMissionsFromFile(req.message) }
 
-if __name__ == "__main__":
-	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
+    def nextGoal(self, req):
+        if self.currentMission == len(self.missions):
+            rospy.logerr('All missions finished')
+            return None
+        mission = self.missions[self.currentMission]
+        point, isLast = mission.nextGoal()
+        if isLast:
+            self.currentMission += 1
+        point['isLast'] = self.currentMission == len(self.missions)
+        return point
 
-	mission_folder = rospy.get_param('/ros/missions/path')
 
-	print("Path : {}".format(mission_folder))
+class Mission(object):
 
-	goal_srv 	= rospy.Service('next_goal', next_goal, sendPointService)
-	mission_srv = rospy.Service('new_mission', message, newMission)
+    def __init__(self):
+        self.type = None
+        self.points = []
+        self.currentPoint = 0
 
-	rospy.spin()
+    def isRadiales(self):
+        return self.type == 'Radiales'
+
+    def isWaypoints(self):
+        return self.type == 'Waypoints'
+
+    def nextGoal(self):
+        point = self.points[self.currentPoint]
+        self.currentPoint += 1
+        isLast = self.currentPoint == len(self.points)
+        return point, isLast
+
+    @staticmethod
+    def parse(jsonMission):
+        mission = Mission()
+        if not 'type' in jsonMission.keys():
+            return None
+        mission.type = jsonMission['type']
+        if (mission.isRadiales() and not 'radiales' in jsonMission.keys()) or\
+            (mission.isWaypoints() and not 'waypoints' in jsonMission.keys()):
+            return None
+        if mission.isRadiales():
+            parsed = mission.parseRadiales(jsonMission['radiales'])
+            if not parsed:
+                return False
+        elif mission.isWaypoints():
+            parsed = mission.parseWaypoints(jsonMission['waypoints'])
+            if not parsed:
+                return False
+        else:
+            return None
+        return mission
+
+    def parseRadiales(self, radiales):
+        for radiale in radiales:
+            keys = radiale.keys()
+            if not 'start' in keys or not 'end' in keys or not 'id' in keys:
+                return False
+            point = {
+                'latitude': [radiale['start']['lat'], radiale['end']['lat']],
+                'longitude': [radiale['start']['lng'], radiale['end']['lng']],
+                'id': radiale['id']
+            }
+            self.points.append(point)
+        return True
+
+    def parseWaypoints(self, waypoints):
+        for waypoint in waypoints:
+            keys = waypoint.keys()
+            if not 'lat' in keys or not 'lng' in keys or not 'id' in keys:
+                return False
+            point = {
+                'latitude': [waypoint['lat']],
+                'longitude': [waypoint['lng']],
+                'id': waypoint['id']
+            }
+            self.points.append(point)
+        return True
+
+
+if __name__ == '__main__':
+    missionDirectory = rospy.get_param('/ros/missions/path')
+    missionParser = MissionParser(missionDirectory)
+
+    rospy.init_node('mission_parser')
+
+    goalSrv = rospy.Service('next_goal', next_goal, missionParser.nextGoal)
+    missionSrv = rospy.Service('new_mission', message, missionParser.newMission)
+
+    rospy.spin()
