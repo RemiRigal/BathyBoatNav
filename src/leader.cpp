@@ -249,8 +249,10 @@ void Leader::askForNewWaypoints()
 
             q_target.setRPY(0.0, 0.0, yaw_radiale);
 
-            ROS_INFO("Target -> %s | (%lf, %lf)", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1]);
+            ROS_INFO("Target -> %s | (%lf, %lf) | isLast : %d", isLine ? "Radiale" : "Waypoint", x_target[0], x_target[1], isLast);
+
             mission_finished = next_goal_msg.response.isLast;
+
         } else {
         	ROS_INFO("Mission finished. IDLE state.");
         	Leader::setState("IDLE");
