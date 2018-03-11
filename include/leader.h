@@ -21,6 +21,10 @@
 // Messages
 #include "BathyBoatNav/robot_state.h"
 #include "BathyBoatNav/robot_target.h"
+#include "sbg_driver/SbgEkfNav.h"
+#include "sbg_driver/SbgShipMotion.h"
+#include "sbg_driver/SbgGpsPos.h"
+#include "sbg_driver/SbgGpsVel.h"
 
 // Services
 #include "std_srvs/SetBool.h"
@@ -108,7 +112,14 @@ class Leader{
 		void changeSpeed(double speed);
 
 		// Sensors		
-		void gatherData();
+		ros::Subscriber sbg_imu_pos_sub;
+		void updateImuPosition(const sbg_driver::SbgEkfNav::ConstPtr& msg);
+		ros::Subscriber sbg_imu_vel_sub;
+		void updateImuVelocity(const sbg_driver::SbgShipMotion::ConstPtr& msg);
+		ros::Subscriber sbg_gps_pos_sub;
+		void updateGpsPosition(const sbg_driver::SbgGpsPos::ConstPtr& msg);
+		ros::Subscriber sbg_gps_vel_sub;
+		void updateGpsVelocity(const sbg_driver::SbgGpsVel::ConstPtr& msg);
 
 		// Evolution of status if simulation
 		ros::Subscriber robot_state_converted_evolved_sub;

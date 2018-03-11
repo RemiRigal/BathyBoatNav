@@ -2,7 +2,7 @@
 
     <param name="isSimu" type="bool" value="false"/>
 
-    <rosparam file="/home/helios/Helios/Config/ros_config.yaml" command="load"/>
+    <rosparam file="/home/helios/Helios/Config/config.yaml" command="load"/>
 
     <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
 
@@ -12,6 +12,10 @@
         <node name="mission_parser" pkg="BathyBoatNav" type="mission_parser.py" output="screen" />
 
         <node name="fsm" pkg="BathyBoatNav" type="fsm" output="screen" />
+
+<!--
+        <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
+-->
     </group>
 
     <node name="simulator" pkg="BathyBoatNav" type="simulator" output="screen"/>

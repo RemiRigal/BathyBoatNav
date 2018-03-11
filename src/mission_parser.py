@@ -140,7 +140,7 @@ def newMission(req):
 if __name__ == "__main__":
 	rospy.init_node('mission_interpreter', log_level=rospy.WARN)
 
-	mission_folder = rospy.get_param('/missions/path')
+	mission_folder = rospy.get_param('/ros/missions/path')
 
 	print("Path : {}".format(mission_folder))
 

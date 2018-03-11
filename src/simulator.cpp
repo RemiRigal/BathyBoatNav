@@ -5,9 +5,8 @@ using namespace std;
 Simulator::Simulator()
 {
 	// Import datas
-	Handle.getParam("/simulation/x_initial", converted_x[0]);
-	Handle.getParam("/simulation/y_initial", converted_x[1]);
-	Handle.getParam("/simulation/yaw_initial", yaw);
+	Handle.getParam("/common/map/initialPosition/lat", x[0]);
+	Handle.getParam("/common/map/initialPosition/lng", x[1]);
 
 	// Robot state
 	robot_state_sub = Handle.subscribe("/robot_state_converted", 1000, &Simulator::updateRobotState, this);
@@ -22,7 +21,21 @@ Simulator::Simulator()
 	// Coordinates conversion
 	convert_coords_client = Handle.serviceClient<BathyBoatNav::gps_conversion>("/gps_converter");
 
-	ROS_INFO("%lf", yaw);
+	sleep(1);
+	BathyBoatNav::gps_conversion convert_coords_msg;
+
+	convert_coords_msg.request.mode = 1;
+	convert_coords_msg.request.long_or_x = x[0];
+	convert_coords_msg.request.lat_or_y = x[1];
+
+	if (convert_coords_client.call(convert_coords_msg))
+	{
+		converted_x[0] = convert_coords_msg.response.long_or_x;
+		converted_x[1] = convert_coords_msg.response.lat_or_y;
+	} else {
+		ROS_ERROR("Failed to call gps converter");
+	}
+
 }
 
 Simulator::~Simulator()
@@ -34,7 +47,8 @@ void Simulator::RunContinuously()
 	ros::Rate loop_rate(25);
 
 	// Init
-	u_yaw = 0;
+	yaw = 0.0;
+	u_yaw = 0.0;
 
 	while(ros::ok())
 	{

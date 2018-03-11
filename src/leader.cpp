@@ -6,11 +6,11 @@ Leader::Leader()
 {
 	// Import datas
 	Handle.getParam("/isSimu", isSimulation);
-	Handle.getParam("/target/accept_dist", accept_dist);
-	Handle.getParam("/regulation/k_P", k_P);
-	Handle.getParam("/regulation/k_I", k_I);
-	Handle.getParam("/regulation/k_D", k_D);
-	Handle.getParam("/regulation/initial_speed", linear_speed_target[0]);
+	Handle.getParam("/ros/target/accept_dist", accept_dist);
+	Handle.getParam("/ros/regulation/k_P", k_P);
+	Handle.getParam("/ros/regulation/k_I", k_I);
+	Handle.getParam("/ros/regulation/k_D", k_D);
+	Handle.getParam("/ros/regulation/initial_speed", linear_speed_target[0]);
 	
 	// Robot state
 	robot_state_raw_pub = Handle.advertise<BathyBoatNav::robot_state>("/robot_state_raw", 1000);
@@ -44,8 +44,10 @@ Leader::Leader()
 		robot_state_raw_evolved_sub = Handle.subscribe("/evolved_robot_state_raw", 1000, &Leader::updateRobotStateRawEvolved, this);
 	} else {
 		ROS_INFO("Normal mode");
-		robot_state_converted_evolved_sub = Handle.subscribe("/robot_state_converted_evolved", 1000, &Leader::updateRobotStateConvertedEvolved, this);
-		robot_state_raw_evolved_sub = Handle.subscribe("/robot_state_raw_evolved", 1000, &Leader::updateRobotStateRawEvolved, this);
+		sbg_imu_pos_sub = Handle.subscribe("output/log_ekf_nav", 1000, &Leader::updateImuPosition, this);
+		sbg_imu_vel_sub = Handle.subscribe("output/log_ship_motion", 1000, &Leader::updateImuVelocity, this);
+		sbg_gps_pos_sub = Handle.subscribe("output/log_gps1_pos", 1000, &Leader::updateGpsPosition, this);
+		sbg_gps_vel_sub = Handle.subscribe("output/log_gps1_vel", 1000, &Leader::updateGpsVelocity, this);
 	}
 
 }
@@ -376,7 +378,24 @@ void Leader::updateRobotStateRawEvolved(const BathyBoatNav::robot_state::ConstPt
 	q = q_evolved;
 }
 
-void Leader::gatherData()
+void Leader::updateImuPosition(const sbg_driver::SbgEkfNav::ConstPtr& msg)
+{
+	x[0] = msg->position.x;
+	x[1] = msg->position.y;
+	x[2] = msg->position.z;
+}
+
+void Leader::updateImuVelocity(const sbg_driver::SbgShipMotion::ConstPtr& msg)
+{
+	linear_speed[0] = msg->velocity.x;
+}
+
+void Leader::updateGpsPosition(const sbg_driver::SbgGpsPos::ConstPtr& msg)
+{
+
+}
+
+void Leader::updateGpsVelocity(const sbg_driver::SbgGpsVel::ConstPtr& msg)
 {
 
 }

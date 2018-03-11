@@ -6,7 +6,7 @@ Regulator::Regulator()
 {
 	// Import datas
 	Handle.getParam("/isSimu", isSimulation);
-	Handle.getParam("/regulation/full_left", full_left);
+	Handle.getParam("/ros/regulation/full_left", full_left);
 
 	// Robot state
 	robot_state_sub = Handle.subscribe("/robot_state_converted", 1000, &Regulator::updateRobotState, this);
