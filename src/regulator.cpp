@@ -117,7 +117,7 @@ void Regulator::computeFixes()
 	e   = 2.0*atan(tan((yaw_bar - yaw)/2.0));
 
 	if (abs(e) > full_left) {
-		u_yaw = 0.8;
+		u_yaw = 1.0;
 	} else {
 		P = k_P*e;
 		I += (1/25)*e;

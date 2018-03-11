@@ -126,7 +126,7 @@ bool Leader::parseCommand(BathyBoatNav::message::Request &req, BathyBoatNav::mes
 				ROS_INFO("PID message canvas is \"FACTOR|k_I|k_P\" but received \"%s\"", msg.c_str());
 			}
 		} else if(key_msg == "SPEED") {
-			if(sizeVector == 3)
+			if(sizeVector == 2)
 			{
 				Leader::changeSpeed(atof(split_msg[1].c_str()));
 				error = false;
@@ -188,7 +188,8 @@ void Leader::changeSpeed(double speed)
 
 void Leader::checkIfTargetValidated()
 {
-	if(pow(pow(x_target[0] - x[0],2) + pow(x_target[1] - x[1],2), 0.5) <= accept_dist)
+	double dist = pow(pow(x_target[0] - converted_x[0],2) + pow(x_target[1] - converted_x[1],2), 0.5);
+	if(dist <= accept_dist)
 	{
 		ROS_INFO("Asking for new target");
 		Leader::askForNewWaypoints();
@@ -257,7 +258,7 @@ void Leader::updateRobotStateMsg()
 	robot_state_msg.pid.k_I = k_I;
 	robot_state_msg.pid.k_D = k_D;
 
-	double batt_array[] = {50.0, 60.0, 40.0};
+	double batt_array[] = {0.50, 0.60, 0.40};
 	batt = vector<double>(batt_array, batt_array + sizeof(batt_array) / sizeof(double) );
 
 	robot_state_msg.batteries.data = batt;

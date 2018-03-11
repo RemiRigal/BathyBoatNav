@@ -6,6 +6,7 @@
 #include "geometry_msgs/Twist.h"
 #include "std_msgs/Int64.h"
 #include "BathyBoatNav/new_state.h"
+#include "BathyBoatNav/robot_state.h"
 
 #include "tf/tf.h"
 #include "tf2/LinearMath/Quaternion.h"
@@ -32,6 +33,11 @@ void init_servo(int fd)
 	maestroSetTarget(fd, 1, 4000);
 	
 	sleep(2);
+}
+
+void updateRobotState(const BathyBoatNav::robot_state::ConstPtr& msg)
+{
+	state = State(msg->state);
 }
 
 int main(int argc, char *argv [])
@@ -78,12 +84,14 @@ int main(int argc, char *argv [])
 
 	ros::Subscriber cons_sub = n.subscribe(channel, 1000, chatCallback);
 
+	ros::Subscriber robot_state_sub = n.subscribe("/robot_state_converted", 1000, updateRobotState);
+
 	// Publisher
 
-	ros::Publisher left_mot_pub = n.advertise<std_msgs::Int64>("left_mot", 1000);
+	ros::Publisher left_mot_pub = n.advertise<std_msgs::Int64>("/left_mot", 1000);
     std_msgs::Int64 left_mot_msgs;
 
-	ros::Publisher right_mot_pub = n.advertise<std_msgs::Int64>("right_mot", 1000);
+	ros::Publisher right_mot_pub = n.advertise<std_msgs::Int64>("/right_mot", 1000);
     std_msgs::Int64 right_mot_msgs;
 
 	while(ros::ok())

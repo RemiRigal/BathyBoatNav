@@ -44,6 +44,8 @@ def readFile():
 	if os.path.isfile(path):
 		with open(path, "r") as jsonFile:
 			jsonDict = json.loads(jsonFile.read())
+			
+			print(jsonDict)
 			badJson = False
 			
 			if "missions" in jsonDict.keys():
@@ -85,6 +87,13 @@ def readFile():
 		rospy.logerr("No mission file found")
 		return False
 
+	print(ids)
+	print(latitudes)
+	print(longitudes)
+	print(missions)
+	print(nbrMissions)
+	print(nbrMissionsSent)
+
 	return True
 		
 def sendPointService(req):
@@ -105,10 +114,16 @@ def sendPointService(req):
 			res["latitude"].append(latitudes[nbrMissionsSent].pop(0))
 		
 		res["id"] = ids[nbrMissionsSent].pop(0) 
-		if not longitudes[nbrMissionsSent]:
-			nbrMissionsSent += 1			
 		
 		res["remainingMissions"] = nbrMissions - nbrMissionsSent
+
+		print(latitudes)
+		print(nbrMissions - nbrMissionsSent)
+
+		if not longitudes[nbrMissionsSent]:
+			nbrMissionsSent += 1
+
+
 	return res
 
 def newMission(req):
@@ -117,6 +132,8 @@ def newMission(req):
 	name_mission_file = req.message
 
 	res['success'] = readFile()
+	print(latitudes)
+	print(nbrMissions - nbrMissionsSent)
 
 	return res
 

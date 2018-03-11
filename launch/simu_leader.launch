@@ -2,7 +2,7 @@
 
     <param name="isSimu" type="bool" value="true"/>
 
-    <rosparam file="$(find BathyBoatNav)/config/config.yaml" command="load"/>
+    <rosparam file="/home/helios/Helios/Config/ros_config.yaml" command="load"/>
 
     <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
 
@@ -16,14 +16,12 @@
 
     <node name="simulator" pkg="BathyBoatNav" type="simulator" output="screen"/>
 
-<!--
     <group ns="server">
 
         <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="1" output="screen" />
         <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="0" output="screen" />
 
 	</group>
--->
 
     <group ns="command">
         <node name="regul" pkg="BathyBoatNav" type="regulator" output="screen" />

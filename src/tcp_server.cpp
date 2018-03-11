@@ -71,8 +71,8 @@ void robotStateCallback(const BathyBoatNav::robot_state::ConstPtr& msg)
 	state = msg->state;
 	gps_status = msg->gps_status;
 
-	latitude 	= msg->pose.position.x;
-	longitude 	= msg->pose.position.y;
+	longitude 	= msg->pose.position.x;
+	latitude 	= msg->pose.position.y;
 
 	tf::Quaternion q(msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z, msg->pose.orientation.w);
 	tf::Matrix3x3 m(q);
@@ -102,8 +102,8 @@ void send_to ()
 	ros::Rate loop_rate(10);
 	char buffer[500];
 
-	ros::Subscriber left_sub 	= n.subscribe("left_mot", 1000, leftCallback);
-	ros::Subscriber right_sub = n.subscribe("right_mot", 1000, rightCallback);
+	ros::Subscriber left_sub 	= n.subscribe("/left_mot", 1000, leftCallback);
+	ros::Subscriber right_sub = n.subscribe("/right_mot", 1000, rightCallback);
 	ros::Subscriber vel_sub 	= n.subscribe("/robot_state_raw", 1000, robotStateCallback);
 
 	while(ros::ok())
@@ -156,28 +156,13 @@ void send_to ()
 
 void rec_from ()
 {
-    ros::NodeHandle n;
-	ros::Rate loop_rate(10);
+    ros::NodeHandle Handle;
 	char c[1];
 	string rcv_msg;
 	int res;
-	int i, j;
 
-	double speed_hat = 0.5;
-
-	vector<string> split_msg;
-
-    ros::Publisher speed_pub = n.advertise<std_msgs::Float64>("speed_hat", 1000);
-    std_msgs::Float64 speed_msg;
-
-	ros::ServiceClient mision_path_client = n.serviceClient<BathyBoatNav::message>("new_mission");
-    BathyBoatNav::message mission_path_msg;
-
-    ros::ServiceClient change_state_client = n.serviceClient<BathyBoatNav::message>("changeStateSrv");
-    BathyBoatNav::message change_state_msg;
-
-    ros::ServiceClient change_factor_client = n.serviceClient<BathyBoatNav::pid_coeff>("PID_coeff");
-    BathyBoatNav::pid_coeff pid_coeff_msg;
+	ros::ServiceClient tcp_inputs_client = Handle.serviceClient<BathyBoatNav::message>("/TCP_inputs");
+    BathyBoatNav::message tcp_inputs_msg;
 
 	while(ros::ok())
 	{
@@ -194,58 +179,18 @@ void rec_from ()
 		} while((int)c[0] != 0);
 		
 		ROS_INFO("Command received : %s", rcv_msg.c_str());
-		boost::split(split_msg, rcv_msg, boost::is_any_of("|"));
 		
-		if(split_msg[0] == "MISSION")
+		tcp_inputs_msg.request.message = rcv_msg;
+
+		if (tcp_inputs_client.call(tcp_inputs_msg))
 		{
-			mission_path_msg.request.message = split_msg[1];
-
-			if(mision_path_client.call(mission_path_msg))
-			{                
-				if(mission_path_msg.response.success)
-				{
-					ROS_INFO("Mission parsed");
-				} else {
-					ROS_INFO("Mission parsing failed");
-				}
-			} else {
-				ROS_WARN("Call to mission interpreter failed");
+			if(!tcp_inputs_msg.response.success)
+			{
+				ROS_WARN("Leader failed to interpret message");
 			}
-
-		} else if(split_msg[0] == "FACTOR") {
-
-			pid_coeff_msg.request.k_P = atof(split_msg[1].c_str());
-			pid_coeff_msg.request.k_I = atof(split_msg[2].c_str());
-
-			if(change_factor_client.call(pid_coeff_msg))
-			{                
-				if(!pid_coeff_msg.response.success)
-				{
-					ROS_INFO("Mission parsing failed");
-				}
-			} else {
-				ROS_WARN("Call to regul failed for changing k_I");
-			}
-
-		} else if(split_msg[0] == "SPEED") {
-			speed_hat = atof(split_msg[1].c_str());
 		} else {
-
-			change_state_msg.request.message = split_msg[0];
-			
-			if(change_state_client.call(change_state_msg))
-			{                
-				if(!change_state_msg.response.success)
-				{
-					ROS_WARN("Failed to change state. Msg was %s", split_msg[1].c_str());
-				}
-			} else {
-				ROS_WARN("Call to fsm failed");
-			}
+			ROS_ERROR("Failed to call leader from TCP");
 		}
-
-		speed_msg.data = speed_hat;
-		speed_pub.publish(speed_msg);
 
 		rcv_msg.clear();
 	}

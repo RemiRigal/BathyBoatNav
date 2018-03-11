@@ -21,6 +21,8 @@ Simulator::Simulator()
 
 	// Coordinates conversion
 	convert_coords_client = Handle.serviceClient<BathyBoatNav::gps_conversion>("/gps_converter");
+
+	ROS_INFO("%lf", yaw);
 }
 
 Simulator::~Simulator()
@@ -30,6 +32,9 @@ void Simulator::RunContinuously()
 {
 	// Loop
 	ros::Rate loop_rate(25);
+
+	// Init
+	u_yaw = 0;
 
 	while(ros::ok())
 	{
@@ -44,12 +49,13 @@ void Simulator::RunContinuously()
 
 void Simulator::evolution()
 {
+	double dt = 0.1;
 	if (state == RUNNING)
 	{
-		converted_x[0]    += speed*25*sin(yaw)/25.0;
-		converted_x[1]    += speed*25*cos(yaw)/25.0;
+		converted_x[0]    += dt*7.0*speed*sin(yaw);
+		converted_x[1]    += dt*7.0*speed*cos(yaw);
 
-		yaw     += (1/25)*u_yaw;
+		yaw += dt*u_yaw;
 	}
 
 	q.setRPY(0.0, 0.0, yaw);
@@ -77,7 +83,7 @@ void Simulator::updateRobotState(const BathyBoatNav::robot_state::ConstPtr& msg)
 void Simulator::updateCommand(const geometry_msgs::Twist::ConstPtr& msg)
 {
 	speed = msg->linear.x;
-	u_yaw = msg->angular.z;
+	u_yaw = fabs(msg->angular.z) <= 1.0 ? msg->angular.z : (msg->angular.z/fabs(msg->angular.z))*1.0;
 }
 
 void Simulator::updateRobotStateConvertedEvolvedMsg()
