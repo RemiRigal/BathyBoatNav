@@ -155,7 +155,15 @@ void send_to ()
 			break;
 		}
 
-		sprintf(buffer,"$STATE;%lf;%d;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), state, speed, k_P, k_I, k_D);
+		sprintf(buffer,"$STATE;%lf;%d\n",ros::Time::now().toSec(), state);
+		
+		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
+		{
+			printf("End of connection\n");
+			break;
+		}
+
+		sprintf(buffer,"$REGUL;%lf;%lf;%lf;%lf;%lf\n",ros::Time::now().toSec(), speed, k_P, k_I, k_D);
 		
 		if( send(socket_service, buffer, strlen(buffer), 0) < 0 )
 		{
