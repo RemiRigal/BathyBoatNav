@@ -44,10 +44,10 @@ Leader::Leader()
 		robot_state_raw_evolved_sub = Handle.subscribe("/evolved_robot_state_raw", 1000, &Leader::updateRobotStateRawEvolved, this);
 	} else {
 		ROS_INFO("Normal mode");
-		sbg_imu_pos_sub = Handle.subscribe("output/log_ekf_nav", 1000, &Leader::updateImuPosition, this);
-		sbg_imu_vel_sub = Handle.subscribe("output/log_ship_motion", 1000, &Leader::updateImuVelocity, this);
-		sbg_gps_pos_sub = Handle.subscribe("output/log_gps1_pos", 1000, &Leader::updateGpsPosition, this);
-		sbg_gps_vel_sub = Handle.subscribe("output/log_gps1_vel", 1000, &Leader::updateGpsVelocity, this);
+		sbg_imu_pos_sub = Handle.subscribe("ekf_nav", 1000, &Leader::updateImuPosition, this);
+		sbg_imu_vel_sub = Handle.subscribe("ship_motion", 1000, &Leader::updateImuVelocity, this);
+		// sbg_gps_pos_sub = Handle.subscribe("gps_pos", 1000, &Leader::updateGpsPosition, this);
+		// sbg_gps_vel_sub = Handle.subscribe("gps_vel", 1000, &Leader::updateGpsVelocity, this);
 	}
 
 }

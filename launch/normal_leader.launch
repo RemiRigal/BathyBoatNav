@@ -4,6 +4,8 @@
 
     <rosparam file="/home/helios/Helios/Config/config.yaml" command="load"/>
 
+    <include file="$(find sbg_driver)/launch/helios.launch"/>
+
     <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
 
     <group ns="brain">
