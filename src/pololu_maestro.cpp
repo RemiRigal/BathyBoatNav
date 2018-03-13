@@ -12,7 +12,6 @@ Maestro::Maestro()
 	if ( (pololu_fd = open(pololu_path.c_str(), O_RDWR | O_NOCTTY) ) == -1)
 	{
 		ROS_INFO("Pololu not found on path : %s", pololu_path.c_str());
-
 	}
 
 	struct termios options;
@@ -22,13 +21,6 @@ Maestro::Maestro()
 	options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
 	tcsetattr(pololu_fd, TCSANOW, &options);
 
-	// int position = maestroGetPosition(fd, 0);
-	// printf("Current position is %d.\n", position);
-
-	// int target = (position < 6000) ? 7000 : 5000;
-	// printf("Setting target to %d (%d us).\n", target, target/4);
-	// maestroSetTarget(fd, 0, target);
-
 	// Service for setting target
 	getting_position_srv 	= Handle.advertiseService("/get_pos_pololu", &Maestro::parseGetPosition, this);;
 	setting_target_srv 		= Handle.advertiseService("/set_target_pololu", &Maestro::parseSetTarget, this);;
@@ -37,6 +29,17 @@ Maestro::Maestro()
 Maestro::~Maestro()
 {
 	close(pololu_fd);
+}
+
+void Maestro::RunContinuously()
+{
+	// Loop
+	ros::Rate loop_rate(25);
+	while(ros::ok())
+	{
+		ros::spinOnce();
+		loop_rate.sleep();
+	}
 }
 
 // Gets the position of a Maestro channel.
@@ -93,4 +96,11 @@ bool Maestro::parseGetPosition(BathyBoatNav::get_pololu::Request &req, BathyBoat
 	}
 
 	return res.success;
+}
+
+int main(int argc, char** argv){
+	ros::init(argc,argv,"maestro");
+	Maestro maestro = Maestro();
+	maestro.RunContinuously();
+	return EXIT_SUCCESS;
 }
