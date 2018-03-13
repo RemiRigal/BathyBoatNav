@@ -1,0 +1,46 @@
+<launch>
+
+    <group ns="helios">
+
+        <param name="Simu" type="bool" value="false"/>
+
+        <node name="fsm_manager" pkg="BathyBoatNav" type="fsm" output="screen"/>
+
+        <include file="$(find sbg_driver)/launch/sbg_ellipse_helios.launch"/>
+        <include file="$(find sounder)/launch/sounder.launch"/>
+
+    <!--
+        <include file="$(find monitor)/launch/monitor.launch"/>
+    -->
+
+        <node name="mission_interpreter" pkg="BathyBoatNav" type="mission_interpreter.py" output="screen" />
+        <node name="convert2Lambert" pkg="BathyBoatNav" type="convert2Lambert.py" output="screen" />
+
+<!--
+        <node name="gps_converter" pkg="BathyBoatNav" type="gps_converter" output="screen"/>
+-->
+        <!-- Args server : Port (int) | Sender (int) 1 is send 0 if read -->
+        <node name="tcp_server_send" pkg="BathyBoatNav" type="tcp_server" args="29200 1" output="screen" />
+        <node name="tcp_server_recv" pkg="BathyBoatNav" type="tcp_server" args="22300 0" output="screen" />
+
+
+        <node name="pololu" pkg="BathyBoatNav" type="pololu" output="screen">
+            <param name="Path" type="string" value="/dev/pololu"/>
+            <param name="Cons_channel" type="string" value="cons_boat"/>
+            <param name="Turn_gap" type="int" value="500"/>
+        </node>
+        
+        <node name="regul_helios" pkg="BathyBoatNav" type="regul_helios" output="screen" >
+                <param name="Full_left" type="double" value="2.5"/>
+                <param name="Dead_zone" type="double" value="0.05"/>
+                <param name="Accept_gap" type="double" value="5.0"/>
+                <param name="P" type="double" value="0.5"/>
+                <param name="I" type="double" value="0.0"/>
+        </node>
+
+        <node name="rosbag_record_diag" pkg="rosbag" type="record" 
+                args="record -o /home/helios/Helios/Bags/helios -a"/>
+
+    </group>
+    
+</launch>
